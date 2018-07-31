@@ -4,7 +4,7 @@ var Inotify = require('inotify').Inotify;
 var inotify = new Inotify();
 
 var videosFolder = '/videos/'
-var ffmpegFolder = process.env.FFMPEGPATH;
+var ffmpegFolder = '/ffmpeg/';
 function ExtractedVideosMonitor(onVideoBadFormat) {
     this.start = function () {
         inotify.addWatch({
