@@ -1,12 +1,12 @@
-FROM node:8.11.3-alpine
+FROM node:8.11.3-slim
 
-RUN apk update &&  apk add --virtual .build-deps curl \
+RUN apt-get update && apt-get insatall -y curl \
 && curl -o ffmpeg-git-64bit-static.tar.xz  https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz \
 && mkdir ffmpeg \
 && tar xf ffmpeg-git-64bit-static.tar.xz  -C /ffmpeg --strip-components=1 \
-&& apk del .build-deps \
-&& rm -rf /var/cache/apk \
-&& rm -rf ffmpeg-git-64bit-static.tar.xz
+&& rm -rf /var/lib/apt/lists/* \
+&& rm -rf ffmpeg-git-64bit-static.tar.xz \
+&& rm -rf /ffmpeg/ffmpeg-10bit
 
 
 
