@@ -5,8 +5,7 @@ RUN apt-get update && apt-get install -yqq --no-install-recommends curl \
 && mkdir ffmpeg \
 && tar xf ffmpeg-git-64bit-static.tar.xz  -C /ffmpeg --strip-components=1 \
 && rm -rf /var/lib/apt/lists/* \
-&& rm -rf ffmpeg-git-64bit-static.tar.xz \
-&& rm -rf /ffmpeg/ffmpeg-10bit
+&& rm -rf ffmpeg-git-64bit-static.tar.xz 
 
 
 
