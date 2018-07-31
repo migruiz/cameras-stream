@@ -1,0 +1,13 @@
+{
+  "name": "live-stream-extractor",
+  "version": "0.0.0",
+  "description": "LiveStreamExtractor",
+  "main": "app.js",
+  "author": {
+    "name": "miguel"
+  },
+  "dependencies": {
+    "mz": "^2.7.0",
+    "inotify": "^1.4.2"
+  }
+}
