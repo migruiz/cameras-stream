@@ -3,7 +3,7 @@ var spawn = require('child_process').spawn;
 var Inotify = require('inotify').Inotify;
 var inotify = new Inotify();
 
-var videosFolder = process.env.VIDEOSPATH;
+var videosFolder = '/videos/'
 var ffmpegFolder = process.env.FFMPEGPATH;
 function ExtractedVideosMonitor(onVideoBadFormat) {
     this.start = function () {
