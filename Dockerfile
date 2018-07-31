@@ -1,6 +1,6 @@
 FROM node:8.11.3-slim
 
-RUN apt-get update && apt-get install -yqq --no-install-recommends curl python-dev\
+RUN apt-get update && apt-get install -yqq --no-install-recommends curl build-essential python-dev\
 && curl -o ffmpeg-git-64bit-static.tar.xz  https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz \
 && mkdir ffmpeg 
 
