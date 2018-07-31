@@ -18,7 +18,7 @@ RUN cd /App \
 
 COPY App /App
 
-
+ENTRYPOINT ["node","/App/app.js"]
 
 
 
