@@ -63,6 +63,9 @@ function ExtractedVideosMonitor(onVideoBadFormat) {
 
 function FFmpegExtractor() {
     var ffmpegChild = null;
+    var healthyCheck=null;
+    var cameraDownCheck=null;
+    var cameraDownWaitTime=2*60*1000;
     var startNewProcess = function () {
         ffmpegChild = spawn(ffmpegFolder+'ffmpeg'
             , [
@@ -94,8 +97,35 @@ function FFmpegExtractor() {
         ffmpegChild.stderr.on('data', (data) => {
             console.error(`child stderr:\n${data}`);
         });
+
+        if (healthyCheck)
+            clearTimeout(healthyCheck);
+        healthyCheck=setTimeout(function () {
+            console.log("camera stable");
+            if (cameraDownCheck){
+                console.log("camera stable - clearing down check");
+                clearTimeout(cameraDownCheck);
+            }            
+            cameraDownCheck=null;
+            healthyCheck=null;
+            cameraDownWaitTime=2*60*1000;
+        }, 1*30*1000);
+
         ffmpegChild.on('exit', function (code, signal) {
             console.log('child process exited with ' + `code ${code} and signal ${signal}`);
+
+            if (healthyCheck)
+                clearTimeout(healthyCheck);
+            if (cameraDownCheck==null){
+                console.log("down check - starting countdown");
+                cameraDownCheck=setTimeout(function () {
+                    console.log("down check - timed out, triggering reboot");
+                    triggerCameraReboot();
+                    cameraDownWaitTime=cameraDownWaitTime*2;
+                    cameraDownCheck=null;
+                }, cameraDownWaitTime);
+            }
+
             setTimeout(function () {
                 startNewProcess();
             }, 4000);
