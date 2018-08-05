@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "mz": "^2.7.0",
-    "inotify": "^1.4.2"
+    "inotify": "^1.4.2",
+    "amqplib": "^0.5.1" 
   }
 }
