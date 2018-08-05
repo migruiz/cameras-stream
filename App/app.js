@@ -67,7 +67,7 @@ function FFmpegExtractor() {
     var healthyCheck=null;
     var cameraDownCheck=null;
     var cameraDownWaitTime=2*60*1000;
-    function triggerCameraRebootAsync(){        
+    async function triggerCameraRebootAsync(){        
         var content={timestamp:Math.floor(Date.now() / 1000)};
         var connection;
         try {
@@ -143,9 +143,9 @@ function FFmpegExtractor() {
                 clearTimeout(healthyCheck);
             if (cameraDownCheck==null){
                 console.log("down check - starting countdown");
-                cameraDownCheck=setTimeout(function () {
+                cameraDownCheck=setTimeout(async function () {
                     console.log("down check - timed out, triggering reboot");
-                    triggerCameraReboot();
+                    await triggerCameraRebootAsync();
                     cameraDownWaitTime=cameraDownWaitTime*2;
                     cameraDownCheck=null;
                 }, cameraDownWaitTime);
