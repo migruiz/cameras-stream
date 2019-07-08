@@ -1,6 +1,5 @@
 'use strict';
 var spawn = require('child_process').spawn;
-var amqp = require('amqplib');
 var Inotify = require('inotify').Inotify;
 var inotify = new Inotify();
 
@@ -68,28 +67,6 @@ function FFmpegExtractor() {
     var cameraDownCheck=null;
     var cameraDownWaitTime=2*60*1000;
     async function triggerCameraRebootAsync(){        
-        var content={timestamp:Math.floor(Date.now() / 1000)};
-        var connection;
-        try {
-            connection = await amqp.connect("amqp://mslgcpgp:n5Ya32JaLtoYt7Qu0uemu7SFNPpGw8T5@puma.rmq.cloudamqp.com/mslgcpgp");
-            var channel = await connection.createChannel();
-            var queue = 'restartCamera';
-            const config={ durable: true, noAck: false }            
-            await channel.assertQueue(queue,config);
-            var msg = JSON.stringify(content);
-            await channel.sendToQueue(queue, Buffer.from(msg));
-            await channel.close();
-        }
-        catch (err) {
-            console.log("TEMPER error connecting queue" + uri + queue);
-            console.log(err);
-            return;
-        }
-        finally {
-            if (connection) {
-                connection.close();
-            }
-        }
     }
     var startNewProcess = function () {
         ffmpegChild = spawn(ffmpegFolder+'ffmpeg'
