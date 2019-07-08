@@ -18,7 +18,7 @@ function ExtractedVideosMonitor(onVideoBadFormat) {
         var mask = event.mask;
         if (mask & Inotify.IN_CLOSE_WRITE) {
             extractVideoDetails(videosFolder + event.name, function (videoInfo) {
-                console.log(JSON.stringify(videoInfo));
+                //console.log(JSON.stringify(videoInfo));
                 if (!isVideoOK(videoInfo)) {
                     onVideoBadFormat();
                 }
