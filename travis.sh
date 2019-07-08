@@ -1,12 +1,13 @@
 #!/bin/bash  
 set -ev
-HUBNAME=""
-if [[ -z "$TRAVIS_TAG" ]]; then
-   HUBNAME=migruiz/$PI_APP;
-else
-	HUBNAME=migruiz/$PI_APP:$TRAVIS_TAG;
-fi
+HUBNAME=migruiz/cameras-stream-rpi;
 docker pull $HUBNAME || true
-docker build  --cache-from $HUBNAME  -t $HUBNAME  . 
+docker build  --cache-from $HUBNAME  -t $HUBNAME  -f rpi/Dockerfile .
+echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin 
+docker push $HUBNAME  
+
+HUBNAME=migruiz/cameras-stream;
+docker pull $HUBNAME || true
+docker build  --cache-from $HUBNAME  -t $HUBNAME  -f alpine/Dockerfile .
 echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin 
 docker push $HUBNAME  
