@@ -1,7 +1,7 @@
-FROM node:alpine
+FROM node:8-alpine
 
 #4.1.3
-RUN apk add --update curl xz \
+RUN apk add --update curl xz make python g++ \
 && curl -o ffmpeg-static.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz \
 && mkdir ffmpeg \
 && tar xf ffmpeg-static.tar.xz  -C /ffmpeg --strip-components=1 \
