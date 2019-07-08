@@ -9,6 +9,7 @@ RUN apk add --update curl xz make python g++ \
 && mkdir ffmpeg \
 && tar xf ffmpeg-static.tar.xz  -C /ffmpeg --strip-components=1 \
 && apk del curl xz  \
+&& rm -rf ffmpeg-static.tar.xz  \
 && rm -rf /var/cache/apk/*
 
 
