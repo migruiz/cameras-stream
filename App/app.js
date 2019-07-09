@@ -1,10 +1,13 @@
 'use strict';
 var spawn = require('child_process').spawn;
 var Inotify = require('inotify').Inotify;
+var mqtt = require('./mqttCluster.js');
 var inotify = new Inotify();
 
 var videosFolder = '/videos/'
 var ffmpegFolder = '/ffmpeg/';
+global.videoSegmentTopic = 'videoSegmentTopic';
+global.mtqqLocalPath = process.env.MQTTLOCAL;
 function ExtractedVideosMonitor(onVideoBadFormat) {
     this.start = function () {
         inotify.addWatch({
@@ -17,10 +20,14 @@ function ExtractedVideosMonitor(onVideoBadFormat) {
     function onNewFileGenerated(event) {
         var mask = event.mask;
         if (mask & Inotify.IN_CLOSE_WRITE) {
-            extractVideoDetails(videosFolder + event.name, function (videoInfo) {
+            extractVideoDetails(videosFolder + event.name,async function (videoInfo) {
                 //console.log(JSON.stringify(videoInfo));
                 if (!isVideoOK(videoInfo)) {
                     onVideoBadFormat();
+                }
+                else{
+                    var mqttCluster=await mqtt.getClusterAsync() 
+                    mqttCluster.publishData(global.videoSegmentTopic, videoInfo);;
                 }
             });
         }
