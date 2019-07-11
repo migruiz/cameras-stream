@@ -99,7 +99,7 @@ function FFmpegExtractor() {
                 , '30'
                 , '-segment_format'
                 , 'mp4'
-                , videosFolder + '%Y-%m-%d_%H-%M-%S.mp4'
+                , videosFolder + '%s.mp4'
             ]);
         ffmpegChild.stdout.on('data', (data) => {
             console.log(data);
