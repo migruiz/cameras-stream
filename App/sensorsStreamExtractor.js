@@ -1,5 +1,5 @@
 const { Observable } = require('rxjs');
-const { groupBy,mergeMap,throttleTime} = require('rxjs/operators');
+const { groupBy,mergeMap,throttleTime,map} = require('rxjs/operators');
 var mqtt = require('./mqttCluster.js');
 const path = require('path');
 const sensorsReadingStream = new Observable(async subscriber => {  
