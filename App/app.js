@@ -1,5 +1,5 @@
 const { Observable,of,interval} = require('rxjs');
-const { map,buffer,withLatestFrom} = require('rxjs/operators');
+const { map,buffer,withLatestFrom,tap} = require('rxjs/operators');
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
 const { videoSegmentStream } = require('./videoSegmentExtractor');
 const { sensorsReadingStream } = require('./sensorsStreamExtractor');

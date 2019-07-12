@@ -3,6 +3,7 @@ const { groupBy,mergeMap,throttleTime,map} = require('rxjs/operators');
 var mqtt = require('./mqttCluster.js');
 const path = require('path');
 const sensorsReadingStream = new Observable(async subscriber => {  
+    console.log('subscribing sensorsReadingStream')
     var mqttCluster=await mqtt.getClusterAsync()   
     mqttCluster.subscribeData(global.sensorReadingTopic, function(content){
         subscriber.next(content)

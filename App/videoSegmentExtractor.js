@@ -9,7 +9,8 @@ var inotify = new Inotify();
 
 const videosFolder = '/videos/'
 
-const videoFilesStream = new Observable(subscriber => {      
+const videoFilesStream = new Observable(subscriber => {   
+    console.log('subscribing videoFilesStream')   
     inotify.addWatch({
         path: videosFolder,
         watch_for: Inotify.IN_ALL_EVENTS,

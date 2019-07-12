@@ -5,6 +5,7 @@ const ffmpegFolder = '/ffmpeg/';
 
 const probeVideoInfo= function(videoPath){
     return new Observable(subscriber => {  
+        console.log('subscribing probeVideoInfo')   
         const ffprobe = spawn(ffmpegFolder+'ffprobe'
         , [
             '-v'
