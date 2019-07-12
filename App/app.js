@@ -3,6 +3,7 @@ const { Observable} = require('rxjs');
 const { mergeMap,filter,map,scan} = require('rxjs/operators');
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
 const { probeVideoInfo} = require('./ffprobeVideoDetailsExtractor');
+const path = require('path');
 var Inotify = require('inotify').Inotify;
 var inotify = new Inotify();
 
