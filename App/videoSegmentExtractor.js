@@ -16,7 +16,7 @@ const videoFilesStream = new Observable(subscriber => {
         callback: event => subscriber.next(event)
     });
 })
-videoFilesStream.pipe(
+const segmentStream = videoFilesStream.pipe(
     filter(e => e.mask & Inotify.IN_CLOSE_WRITE),
     map(e => e.name),
     mergeMap(fileName => probeVideoInfo(videosFolder + fileName)),
@@ -42,4 +42,4 @@ videoFilesStream.pipe(
     }))
 )
 
-exports.videoSegmentStream = videoFilesStream
+exports.videoSegmentStream = segmentStream
