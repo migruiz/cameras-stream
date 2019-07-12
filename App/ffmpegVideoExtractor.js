@@ -40,6 +40,14 @@ const videoFileStream = new Observable(subscriber => {
         console.log("terminated");
         subscriber.complete()
     });    
+    child.on('close', function (code, signal) {
+        console.log("close");
+        subscriber.complete()
+    });  
+    child.on('error', function (code, signal) {
+        console.log("error");
+        subscriber.complete()
+    });  
     console.log("extracting files");
 });
 
