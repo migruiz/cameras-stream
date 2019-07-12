@@ -30,7 +30,6 @@ const videoFileStream = new Observable(subscriber => {
         , 'mp4'
         , videosFolder + '%s.mp4'
     ]);
-    console.log("extracting files");
     ffmpegChild.stdout.on('data', (data) => {
         console.log(data);
     });
@@ -39,7 +38,8 @@ const videoFileStream = new Observable(subscriber => {
     });
     ffmpegChild.on('exit', function (code, signal) {
         subscriber.complete()
-    });
+    });    
+    console.log("extracting files");
 });
 
 
