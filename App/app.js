@@ -1,7 +1,8 @@
 
 const { Observable} = require('rxjs');
-const { mergeMap} = require('rxjs/operators');
+const { mergeMap,filter,map} = require('rxjs/operators');
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
+const { ffprobeStream} = require('./ffprobeVideoDetailsExtractor');
 var Inotify = require('inotify').Inotify;
 var inotify = new Inotify();
 
@@ -15,12 +16,16 @@ videoExtractorStream.subscribe();
 
 const videosFolder = '/videos/'
 
-const videoFilesStream = new Observable(subscriber => {  
-    
+const videoFilesStream = new Observable(subscriber => {      
     inotify.addWatch({
         path: videosFolder,
         watch_for: Inotify.IN_ALL_EVENTS,
         callback: event => subscriber.next(event)
     });
 })
-videoFilesStream.subscribe(v => console.log(v.mask))
+videoFilesStream.pipe(
+    filter(e => e.mask & Inotify.IN_CLOSE_WRITE),
+    map(e => e.name),
+    mergeMap(fileName => ffprobeStream(videosFolder + fileName))
+)
+.subscribe(v => console.log(v))
