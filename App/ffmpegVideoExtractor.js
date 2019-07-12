@@ -40,7 +40,6 @@ const videoFileStream = new Observable(subscriber => {
     ffmpegChild.on('exit', function (code, signal) {
         subscriber.complete()
     });
-    subscriber.next(ffmpegChild);
 });
 
 
