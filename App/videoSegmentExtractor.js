@@ -42,4 +42,4 @@ videoFilesStream.pipe(
     }))
 )
 
-exports.videoSegmentStream = videoFileStream
+exports.videoSegmentStream = videoFilesStream
