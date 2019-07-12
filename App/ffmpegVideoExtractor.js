@@ -6,7 +6,7 @@ const videosFolder = '/videos/'
 const ffmpegFolder = '/ffmpeg/';
 
 const videoFileStream = new Observable(subscriber => {  
-    console.log('subscribing videoFileStream')   
+    console.log('subscribing ffmpeg')   
     function spwanNewChild(){
         var ffmpegChild = spawn(ffmpegFolder+'ffmpeg'
         , [
