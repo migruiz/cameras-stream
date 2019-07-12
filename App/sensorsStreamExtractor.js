@@ -1,6 +1,7 @@
 const { Observable } = require('rxjs');
 const { groupBy,mergeMap,throttleTime} = require('rxjs/operators');
 var mqtt = require('./mqttCluster.js');
+const path = require('path');
 const sensorsReadingStream = new Observable(async subscriber => {  
     var mqttCluster=await mqtt.getClusterAsync()   
     mqttCluster.subscribeData(global.sensorReadingTopic, function(content){
@@ -10,7 +11,11 @@ const sensorsReadingStream = new Observable(async subscriber => {
 
 
 const throttledReadingsStreams = sensorsReadingStream.pipe(
-    groupBy(r => r.data, r => r),    
+    map(r => ({
+        sensorId: parseInt(r.data),
+        timestamp: parseInt(path.basename(r.fileName,'.csv'))
+    })),
+    groupBy(r => r.sensorId, r => r),    
     mergeMap(s => s.pipe(throttleTime(4000))),        
 )
 
