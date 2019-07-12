@@ -8,16 +8,15 @@ global.sensorReadingTopic = 'sensorReadingTopic';
 global.mtqqLocalPath = process.env.MQTTLOCAL;
 
 videoFileStream.subscribe();
-//videoSegmentStream.subscribe(v => console.log(v))
-//sensorsReadingStream.subscribe(reading => console.log(JSON.stringify(reading)));   
+
 
 const sharedvideoSegmentStream = videoSegmentStream.pipe(share());
-
 var combinedStream = sensorsReadingStream.pipe(
+    tap(r => console.log(JSON.stringify(r))),
     buffer(sharedvideoSegmentStream),
     withLatestFrom(sharedvideoSegmentStream),
-    map(([first, second]) => {
-        return `First Source (5s): ${JSON.stringify(first)} Second Source (1s): ${JSON.stringify(second)}`;
+    map(([sensors, segment]) => {
+        return `Sensors ${JSON.stringify(sensors)} Segment: ${JSON.stringify(segment)}`;
     }) 
 )
 combinedStream.subscribe(v => console.log(v));
