@@ -8,7 +8,7 @@ var inotify = new Inotify();
 
 
 const  videoExtractorStream = videoFileStream.pipe(mergeMap(v => videoExtractorStream))
-videoExtractorStream.subscribe();
+videoExtractorStream.subscribe(v => console.log(JSON.stringify(v)));
 
 
 
@@ -28,4 +28,4 @@ videoFilesStream.pipe(
     map(e => e.name),
     mergeMap(fileName => probeVideoInfo(videosFolder + fileName))
 )
-.subscribe(v => console.log(v))
+.subscribe(v => console.log(v.format.filename))
