@@ -37,6 +37,7 @@ const videoFileStream = new Observable(subscriber => {
         console.error(`child stderr:\n${data}`);
     });
     ffmpegChild.on('exit', function (code, signal) {
+        console.log("terminated");
         subscriber.complete()
     });    
     console.log("extracting files");
