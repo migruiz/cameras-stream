@@ -8,8 +8,7 @@ var Inotify = require('inotify').Inotify;
 var inotify = new Inotify();
 
 
-const  videoExtractorStream = videoFileStream.pipe(mergeMap(v => videoExtractorStream))
-videoExtractorStream.subscribe();
+videoFileStream.subscribe();
 
 
 
