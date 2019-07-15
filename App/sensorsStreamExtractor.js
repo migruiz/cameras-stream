@@ -43,7 +43,7 @@ const afterDoorStream = doorOpenSensor.pipe(
     )
 )
 
-const doorOpenStream = merge(beforeDoorStream,afterDoorStream).pipe(
+var doorOpenStream = merge(beforeDoorStream,afterDoorStream).pipe(
     groupBy(r => r.timestamp, stream => stream),
     mergeMap(stream => stream.pipe( takeWhile(e => !e.finished,true),toArray())),
     map(([befDoor,afterDoor]) =>  Object.assign(befDoor, afterDoor))
