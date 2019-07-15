@@ -1,5 +1,5 @@
-const { Observable} = require('rxjs');
-const { mergeMap,filter,map,pairwise} = require('rxjs/operators');
+const { Observable,throwError,timer} = require('rxjs');
+const { mergeMap,filter,map,pairwise,timeout,startWith,concat} = require('rxjs/operators');
 const { probeVideoInfo} = require('./ffprobeVideoDetailsExtractor');
 const path = require('path');
 var Inotify = require('inotify').Inotify;
@@ -18,6 +18,7 @@ const videoFilesStream = new Observable(subscriber => {
     });
 })
 const segmentStream = videoFilesStream.pipe(
+    startWith(concat(timer(6000),throwError('errror'))),
     filter(e => e.mask & Inotify.IN_CLOSE_WRITE),
     timeout(60*1000),
     map(e => e.name),
