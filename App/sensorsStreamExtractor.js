@@ -18,9 +18,9 @@ const throttledReadingsStreams = sensorsReadingStream.pipe(
         timestamp: (new Date).getTime(),                
     })),
     groupBy(r => r.sensorId, r => r),    
-    mergeMap(s => s.pipe(throttleTime(4000))),
-    share(),
-    tap(v => console.log(v))        
+    mergeMap(s => s.pipe(throttleTime(4000))),    
+    tap(v => console.log(v)),   
+    share()     
 )
 const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===1234),share());
 const movementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===6789),share());
