@@ -20,12 +20,12 @@ const throttledReadingsStreams = sensorsReadingStream.pipe(
     mergeMap(s => s.pipe(throttleTime(4000))),
     share()        
 )
-const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId=1234),tap(emi => console.log("door open")));
-const movementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId=6789),tap(emi => console.log("movement sensor")));
+const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===1234),tap(emi => console.log("door open")));
+const movementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===6789),tap(emi => console.log("movement sensor")));
 
 const beforeDoorStream = movementSensor.pipe(
     mergeMap(mr => doorOpenSensor.pipe(
-            tap(emi => console.log("beforeDoorStream - movementSensor pipe()")),
+            tap(emi => console.log("beforeDoorStream - after pipe()")),
             first(),
             tap(emi => console.log("beforeDoorStream - after first()")),
             map(dr => Object.assign({movementBefore:true}, dr)),
@@ -38,7 +38,7 @@ const beforeDoorStream = movementSensor.pipe(
 
 const afterDoorStream = doorOpenSensor.pipe(
     mergeMap(dr => movementSensor.pipe(
-            tap(emi => console.log("afterDoorStream - movementSensor pipe()")),
+            tap(emi => console.log("afterDoorStream - after pipe()")),
             first(),
             tap(emi => console.log("afterDoorStream - after first()")),
             mapTo(Object.assign({movementAfter:true,finished:true}, dr)),
@@ -55,7 +55,8 @@ const doorOpenStream = merge(beforeDoorStream,afterDoorStream).pipe(
     tap(emi => console.log("doorOpenStream - after groupBy()")),
     mergeMap(stream => stream.pipe( takeWhile(e => !e.finished,true),toArray())),
     tap(emi => console.log("doorOpenStream - after mergeMap()")),
-    map(([befDoor,afterDoor]) =>  Object.assign(befDoor, afterDoor))
+    map(([befDoor,afterDoor]) =>  Object.assign(befDoor, afterDoor)),
+    tap(emi => console.log("doorOpenStream - after map()")),
 )
 
 

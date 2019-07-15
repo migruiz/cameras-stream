@@ -21,4 +21,4 @@ var combinedStream = sensorsReadingStream.pipe(
         return `Sensors ${JSON.stringify(sensors)} Segment: ${JSON.stringify(segment)}`;
     }) 
 )
-combinedStream.subscribe(v => console.log(v));
+combinedStream.subscribe();
