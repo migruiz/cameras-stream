@@ -1,5 +1,5 @@
 const { Observable} = require('rxjs');
-const { mergeMap,filter,map,scan} = require('rxjs/operators');
+const { mergeMap,filter,map,pairwise} = require('rxjs/operators');
 const { probeVideoInfo} = require('./ffprobeVideoDetailsExtractor');
 const path = require('path');
 var Inotify = require('inotify').Inotify;
@@ -29,17 +29,11 @@ const segmentStream = videoFilesStream.pipe(
         }
     )),
     map(videoInfo => Object.assign({endTime:videoInfo.startTime+videoInfo.length}, videoInfo)),
-    scan((acc, curr) => (
-        {
-            previous:acc.current,
-            current:curr,  
-        }
-    ), {}),
-    filter( intervalInfo => intervalInfo.previous),
-    map ( intervalInfo => ({
-        startTime:intervalInfo.previous.startTime,
-        endTime:intervalInfo.current.endTime,
-        filesToJoin: [intervalInfo.previous.fileName, intervalInfo.current.fileName]
+    pairwise(),
+    map ( ([previous,current]) => ({
+        startTime:previous.startTime,
+        endTime:current.endTime,
+        filesToJoin: [previous.fileName, current.fileName]
     }))
 )
 

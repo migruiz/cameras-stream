@@ -7,7 +7,8 @@ const { sensorsReadingStream } = require('./sensorsStreamExtractor');
 global.sensorReadingTopic = 'sensorReadingTopic';
 global.mtqqLocalPath = process.env.MQTTLOCAL;
 
-const ffmpegStream = videoFileStream.pipe(last(),expand(_ => videoFileStream));
+const  lastFfmpeg = videoFileStream.pipe(last())
+const ffmpegStream = lastFfmpeg.pipe(expand(_ => lastFfmpeg));
 ffmpegStream.subscribe();
 
 
