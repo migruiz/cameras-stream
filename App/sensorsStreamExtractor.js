@@ -20,8 +20,8 @@ const throttledReadingsStreams = sensorsReadingStream.pipe(
     mergeMap(s => s.pipe(throttleTime(4000))),
     share()        
 )
-const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===1234),tap(emi => console.log("door open")));
-const movementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===6789),tap(emi => console.log("movement sensor")));
+const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===1234),share(),tap(emi => console.log("door open")));
+const movementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===6789),share(),tap(emi => console.log("movement sensor")));
 
 const beforeDoorStream = movementSensor.pipe(
     mergeMap(mr => doorOpenSensor.pipe(
@@ -50,13 +50,15 @@ const afterDoorStream = doorOpenSensor.pipe(
 )
 
 const doorOpenStream = merge(beforeDoorStream,afterDoorStream).pipe(
-    tap(emi => console.log("doorOpenStream - after merge()")),
+    tap(emi => console.log("RESSSSS - after merge()")),
     groupBy(r => r.timestamp, stream => stream),
-    tap(emi => console.log("doorOpenStream - after groupBy()")),
+    tap(emi => console.log("RESSSSS - after groupBy()")),
     mergeMap(stream => stream.pipe( takeWhile(e => !e.finished,true),toArray())),
-    tap(emi => console.log("doorOpenStream - after mergeMap()")),
+    tap(emi => console.log("RESSSSS - after mergeMap()")),
     map(([befDoor,afterDoor]) =>  Object.assign(befDoor, afterDoor)),
-    tap(emi => console.log("doorOpenStream - after map()")),
+    tap(emi => console.log("RESSSSS - after map()")),
+    tap(emi => console.log("")),
+    tap(emi => console.log(""))
 )
 
 
