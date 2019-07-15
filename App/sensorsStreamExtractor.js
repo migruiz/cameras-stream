@@ -22,8 +22,8 @@ const throttledReadingsStreams = sensorsReadingStream.pipe(
     tap(v => console.log(v)),   
     share()     
 )
-const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===1234),share());
-const movementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===6789),share());
+const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===233945),share());
+const movementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===16340250),share());
 
 const beforeDoorStream = movementSensor.pipe(
     mergeMap(mr => doorOpenSensor.pipe(
