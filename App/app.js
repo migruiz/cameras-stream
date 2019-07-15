@@ -15,7 +15,8 @@ ffmpegStream.subscribe();
 var videoHandleStreamError = videoSegmentStream.pipe(
     catchError(error => timer(60*1000).pipe(
         map(_ => console.log("restartong camera")),
-        delay(30*1000),
+        delay(40*1000),
+        tap(_ => console.log("listeng again")),
         mergeMap(_ => videoHandleStreamError)
         )
     )    
