@@ -51,13 +51,19 @@ var doorOpenStream = merge(beforeDoorStream,afterDoorStream).pipe(
 
 doorOpenStream = doorOpenStream.pipe(
     map( e => Object.assign({endVideoAt:getEndTime(e)}, e)),
-    map( e => Object.assign({delayFor:e.endVideoAt - (new Date).getTime()}, e)),
+    map( e => Object.assign({delayFor:getDelay(e.endVideoAt)}, e)),
     tap( e => console.log(e)),
     mergeMap(e => of(e).pipe(delay(e.delayFor))),
     tap( e => console.log("emiited"))
 
 )
 
+function getDelay(endVideoAt){
+    const currentTime = (new Date).getTime();
+    if (currentTime > endVideoAt)
+        return 0;
+    return endVideoAt - currentTime;
+}
 function getEndTime(e){
     if (!e.movementBefore && !e.movementAfter){
         return e.timestamp + VIDEOSEGMENTLENGTH/2;

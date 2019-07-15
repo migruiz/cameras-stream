@@ -14,7 +14,6 @@ ffmpegStream.subscribe();
 
 const sharedvideoSegmentStream = videoSegmentStream.pipe(share());
 var combinedStream = sensorsReadingStream.pipe(
-    tap(r => console.log(JSON.stringify(r))),
     buffer(sharedvideoSegmentStream),
     withLatestFrom(sharedvideoSegmentStream),
     map(([sensors, segment]) => {
