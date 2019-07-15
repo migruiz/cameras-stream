@@ -35,7 +35,7 @@ const videoFileStream = Observable.create(subscriber => {
         console.log("terminated");
         subscriber.complete()
     });    
-    subscriber(ffmpegChild) 
+    subscriber.next(ffmpegChild) 
 });
 
 
