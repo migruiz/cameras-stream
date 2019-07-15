@@ -1,8 +1,8 @@
 const { Observable,of,merge,empty } = require('rxjs');
 const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap} = require('rxjs/operators');
 var mqtt = require('./mqttCluster.js');
-const path = require('path');
 const VIDEOSEGMENTLENGTH=30*1000;
+const WAITFORMOVEMENT=13*1000;
 const sensorsReadingStream = new Observable(async subscriber => {  
     console.log('subscribing sensorsReadingStream')
     var mqttCluster=await mqtt.getClusterAsync()   
@@ -18,7 +18,7 @@ const throttledReadingsStreams = sensorsReadingStream.pipe(
         timestamp: (new Date).getTime(),                
     })),
     groupBy(r => r.sensorId, r => r),    
-    mergeMap(s => s.pipe(throttleTime(4000))),    
+    mergeMap(s => s.pipe(throttleTime(3000))),    
     tap(v => console.log(v)),   
     share()     
 )
@@ -29,7 +29,7 @@ const beforeDoorStream = movementSensor.pipe(
     mergeMap(mr => doorOpenSensor.pipe(
             first(),
             map(dr => Object.assign({movementBefore:true}, dr)),
-            timeoutWith(1000*10,empty())
+            timeoutWith(WAITFORMOVEMENT,empty())
             )
         )
 )
@@ -38,7 +38,7 @@ const afterDoorStream = doorOpenSensor.pipe(
     mergeMap(dr => movementSensor.pipe(
             first(),
             mapTo(Object.assign({movementAfter:true,finished:true, finishTime:(new Date).getTime()}, dr)),
-            timeoutWith(1000*10,of(Object.assign({finished:true, finishTime:(new Date).getTime()}, dr)))
+            timeoutWith(WAITFORMOVEMENT,of(Object.assign({finished:true, finishTime:(new Date).getTime()}, dr)))
         )
     )
 )
@@ -53,9 +53,7 @@ doorOpenStream = doorOpenStream.pipe(
     map( e => Object.assign({endVideoAt:getEndTime(e)}, e)),
     map( e => Object.assign({delayFor:getDelay(e.endVideoAt)}, e)),
     tap( e => console.log(e)),
-    mergeMap(e => of(e).pipe(delay(e.delayFor))),
-    tap( e => console.log("emiited"))
-
+    mergeMap(e => of(e).pipe(delay(e.delayFor)))
 )
 
 function getDelay(endVideoAt){
