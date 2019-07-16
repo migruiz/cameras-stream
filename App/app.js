@@ -1,8 +1,9 @@
 const { Observable,of,interval,timer,from} = require('rxjs');
-const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo} = require('rxjs/operators');
+const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap} = require('rxjs/operators');
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
 const { videoSegmentStream } = require('./videoSegmentExtractor');
 const { sensorsReadingStream } = require('./sensorsStreamExtractor');
+const { extractVideoStream } = require('./sensorVideoExtractor');
 const { emailStream } = require('./emailSender');
 
 
@@ -29,6 +30,9 @@ const sharedvideoSegmentStream = videoHandleStreamError.pipe(share());
 var combinedStream = sensorsReadingStream.pipe(
     buffer(sharedvideoSegmentStream),
     withLatestFrom(sharedvideoSegmentStream),
-    mergeMap(([sensors, segment]) => emailStream(from(sensors)))
+    mergeMap(([sensors, segment]) =>  from(sensors).pipe(map(sensor=>({sensor,segment})))),
+    concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
+    mergeMap(v=> emailStream(v))
+
 )
 combinedStream.subscribe();

@@ -27,16 +27,15 @@ const oUathToken = fileStream('/secrets/tokenCam.json').pipe
 
 
 
-const sendNotificationEmailStream = eventInfoStream => eventInfoStream.pipe(
-    map(event => ({event})),
-    map(v => Object.assign({emailParams:getEmailParameters(v.event)}, v)),
-    map(v => Object.assign({base64Email:getBase64Email(v.emailParams)}, v)),
-    mergeMap(v => oAuthGoogle.pipe(map(oUth => Object.assign({oUth}, v)))),
+const sendNotificationEmailStream = event => oAuthGoogle.pipe(
+    map(oUth => ({oUth})),
     mergeMap(v => oUathToken.pipe(map(token => Object.assign({token}, v)))),
     tap(v => v.oUth.setCredentials(v.token)),
-    mergeMap(v => sendEmailStream(v.oUth,v.base64Email)),
-    tap(v => console.log(JSON.stringify(v)))
+    mergeMap(v => sendEmailStream(v.oUth,getBase64Email(getEmailParameters(event)))),
+    tap(v => console.log(v.status))
 )
+
+
 
 
 function getEmailParameters(eventInfo) {
@@ -46,7 +45,7 @@ function getEmailParameters(eventInfo) {
       fromName: 'homeentrance',
       fromAddress: 'migruizcameras@gmail.com',
       to: 'mig.ruiz@gmail.com',
-      subject:getSubject(eventInfo),
+      subject:getSubject(eventInfo.sensor),
       body: htmlBody
     };
     return emailParams;
