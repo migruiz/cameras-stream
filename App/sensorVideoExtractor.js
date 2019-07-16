@@ -1,6 +1,6 @@
 'use strict';
 var spawn = require('child_process').spawn;
-const { Observable} = require('rxjs');
+const { Observable,of} = require('rxjs');
 const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap} = require('rxjs/operators');
 const fs = require('fs');
 const util = require('util');
