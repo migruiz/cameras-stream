@@ -30,7 +30,7 @@ of(sensorEvent).pipe(
     map(event => event.targetVideoPath)
     //mergeMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent)),
     //mergeMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath)),
-    //mergeMap(v => extractVideoStream(v.joinedStartAt,v.joinedVideoPath,v.targetVideoPath)),
+    //mergeMap(v => ffmpegextractVideoStream(v.joinedStartAt,v.joinedVideoPath,v.targetVideoPath)),
 );
 
 
@@ -53,7 +53,7 @@ const joinFilesStream = (filesToJoinPath,targetFile) => Observable.create(subscr
     });    
 });
 
-const extractVideoStream = (startPosition,joinedVideoPath,targetVideoPath) => Observable.create(subscriber => {   
+const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath) => Observable.create(subscriber => {   
     var ffmpegChild = spawn(ffmpegFolder+'ffmpeg'
     , [
         '-y'
