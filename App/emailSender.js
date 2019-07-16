@@ -15,12 +15,12 @@ const sendEmailStream =(auth,base64EncodedEmail) => from(google.gmail('v1').user
     }
   }));
 
-const oAuthGoogle = fileStream('c:\\secrets\\credentialsCam.json').pipe
+const oAuthGoogle = fileStream(process.env.GMAILAPPCREDENTIALS).pipe
 (
     map(cr => JSON.parse(cr)),
     map(cr => new google.auth.OAuth2(cr.installed.client_id, cr.installed.client_secret, cr.installed.redirect_uris[0])),
 )
-const oUathToken = fileStream('c:\\secrets\\tokenCam.json').pipe
+const oUathToken = fileStream(process.env.GMAILAPPTOKEN).pipe
 (
     map(cr => JSON.parse(cr))
 )
@@ -35,6 +35,7 @@ const sendNotificationEmailStream = eventInfoStream => eventInfoStream.pipe(
     mergeMap(v => oUathToken.pipe(map(token => Object.assign({token}, v)))),
     tap(v => v.oUth.setCredentials(v.token)),
     mergeMap(v => sendEmailStream(v.oUth,v.base64Email)),
+    tap(v => JSON.stringify(v)),
 )
 
 

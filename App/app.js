@@ -3,6 +3,9 @@ const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,dela
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
 const { videoSegmentStream } = require('./videoSegmentExtractor');
 const { sensorsReadingStream } = require('./sensorsStreamExtractor');
+const { emailStream } = require('./emailSender');
+
+
 
 global.sensorReadingTopic = 'sensorReadingTopic';
 global.mtqqLocalPath = process.env.MQTTLOCAL;
@@ -26,8 +29,6 @@ const sharedvideoSegmentStream = videoHandleStreamError.pipe(share());
 var combinedStream = sensorsReadingStream.pipe(
     buffer(sharedvideoSegmentStream),
     withLatestFrom(sharedvideoSegmentStream),
-    map(([sensors, segment]) => {
-        return `Sensors ${JSON.stringify(sensors)} Segment: ${JSON.stringify(segment)}`;
-    }) 
+    mergeMap(([sensors, segment]) => emailStream(from(sensors)))
 )
 combinedStream.subscribe();

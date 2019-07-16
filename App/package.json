@@ -9,6 +9,7 @@
   "dependencies": {
     "mqtt": "~2.18.2",
     "rxjs": "6.5.2",
-    "inotify":"~1.4.6"
+    "inotify":"~1.4.6",
+    "googleapis": "40.0.0"
   }
 }
