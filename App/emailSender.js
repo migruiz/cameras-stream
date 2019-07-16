@@ -35,7 +35,7 @@ const sendNotificationEmailStream = eventInfoStream => eventInfoStream.pipe(
     mergeMap(v => oUathToken.pipe(map(token => Object.assign({token}, v)))),
     tap(v => v.oUth.setCredentials(v.token)),
     mergeMap(v => sendEmailStream(v.oUth,v.base64Email)),
-    tap(v => JSON.stringify(v)),
+    tap(v => console.log(JSON.stringify(v)))
 )
 
 
@@ -43,8 +43,8 @@ function getEmailParameters(eventInfo) {
     const body = 'youtube URL HERE'
     const htmlBody = body.split('\n').join('\n<br>\n');
     const emailParams = {
-      fromName: 'home entrance',
-      fromAddress: 'entrance@gmail.com',
+      fromName: 'homeentrance',
+      fromAddress: 'migruizcameras@gmail.com',
       to: 'mig.ruiz@gmail.com',
       subject:getSubject(eventInfo),
       body: htmlBody
@@ -60,9 +60,9 @@ function getEmailParameters(eventInfo) {
         case 'MOVEMENT_BEFORE_AND_AFTER':
             return `DOOR OPEN: MOVEMENT BEFORE & AFTER at  ${date.getHours()}:${date.getMinutes()}`;
         case 'EXITING':        
-            return `EXITING HOME -> at  ${date.getHours()}:${date.getMinutes()}`;
+            return `<-- EXITING HOME at  ${date.getHours()}:${date.getMinutes()}`;
         case 'ENTERING':
-            return `-> ENTERING HOME at  ${date.getHours()}:${date.getMinutes()}`;
+            return `--> ENTERING HOME at  ${date.getHours()}:${date.getMinutes()}`;
         default:
       }
   }
