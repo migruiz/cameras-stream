@@ -26,7 +26,7 @@ of(sensorEvent).pipe(
     map(event => Object.assign({joinedVideoPath:`${videosFolderTemp}${event.sensor.timestamp}_joined.mp4`}, event)),
     map(event => Object.assign({targetVideoPath:`${videosFolderTemp}${event.sensor.timestamp}.mp4`}, event)),
     map(event => Object.assign({filesToJoinContent:event.segment.filesToJoin.map(v => `file ${v}`).join('\r\n')}, event)),
-    tap(v=> console.log(v=> JSON.stringify(v))),
+    tap(v=> console.log(JSON.stringify(v))),
     map(event => event.targetVideoPath)
     //mergeMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent)),
     //mergeMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath)),
