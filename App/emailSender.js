@@ -15,12 +15,12 @@ const sendEmailStream =(auth,base64EncodedEmail) => from(google.gmail('v1').user
     }
   }));
 
-const oAuthGoogle = fileStream(process.env.GMAILAPPCREDENTIALS).pipe
+const oAuthGoogle = fileStream('/secrets/credentialsCam.json').pipe
 (
     map(cr => JSON.parse(cr)),
     map(cr => new google.auth.OAuth2(cr.installed.client_id, cr.installed.client_secret, cr.installed.redirect_uris[0])),
 )
-const oUathToken = fileStream(process.env.GMAILAPPTOKEN).pipe
+const oUathToken = fileStream('/secrets/tokenCam.json').pipe
 (
     map(cr => JSON.parse(cr))
 )
