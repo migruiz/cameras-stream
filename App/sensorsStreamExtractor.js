@@ -50,6 +50,7 @@ var doorOpenStream = merge(beforeDoorStream,afterDoorStream).pipe(
 )
 
 doorOpenStream = doorOpenStream.pipe(
+    map( e => Object.assign({type:getEventType(e)}, e)),
     map( e => Object.assign({endVideoAt:getEndTime(e)}, e)),
     map( e => Object.assign({delayFor:getDelay(e.endVideoAt)}, e)),
     tap( e => console.log(e)),
@@ -62,19 +63,35 @@ function getDelay(endVideoAt){
         return 0;
     return endVideoAt - currentTime;
 }
-function getEndTime(e){
+
+function getEventType(e){
     if (!e.movementBefore && !e.movementAfter){
-        return e.timestamp + VIDEOSEGMENTLENGTH/2;
+        return 'NO_MOVEMENT'
     }
     else if (e.movementBefore && e.movementAfter){
-        return e.timestamp + VIDEOSEGMENTLENGTH/2;
+        return 'MOVEMENT_BEFORE_AND_AFTER'
     }
     else if (e.movementBefore && !e.movementAfter){
-        return e.timestamp + 3*1000;
+        return 'EXITING'
     }
     else if (!e.movementBefore && e.movementAfter){
-        return e.timestamp + VIDEOSEGMENTLENGTH - 3*1000
+        return 'ENTERING'
     }
+}
+
+
+function getEndTime(e){
+    switch(e.type) {
+        case 'NO_MOVEMENT':
+            return e.timestamp + VIDEOSEGMENTLENGTH/2;          
+        case 'MOVEMENT_BEFORE_AND_AFTER':
+            return e.timestamp + VIDEOSEGMENTLENGTH/2;
+        case 'EXITING':        
+            return e.timestamp + 3*1000;
+        case 'ENTERING':
+            return e.timestamp + VIDEOSEGMENTLENGTH - 3*1000
+        default:
+      }
 }
 
 

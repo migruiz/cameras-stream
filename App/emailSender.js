@@ -27,7 +27,7 @@ const oUathToken = fileStream('c:\\secrets\\tokenCam.json').pipe
 
 
 
-of({}).pipe(
+const sendNotificationEmailStream = eventInfoStream => eventInfoStream.pipe(
     map(event => ({event})),
     map(v => Object.assign({emailParams:getEmailParameters(v.event)}, v)),
     map(v => Object.assign({base64Email:getBase64Email(v.emailParams)}, v)),
@@ -36,7 +36,6 @@ of({}).pipe(
     tap(v => v.oUth.setCredentials(v.token)),
     mergeMap(v => sendEmailStream(v.oUth,v.base64Email)),
 )
-.subscribe(v=> console.log(v))
 
 
 function getEmailParameters(eventInfo) {
@@ -46,10 +45,25 @@ function getEmailParameters(eventInfo) {
       fromName: 'home entrance',
       fromAddress: 'entrance@gmail.com',
       to: 'mig.ruiz@gmail.com',
-      subject: "sub",
+      subject:getSubject(eventInfo),
       body: htmlBody
     };
     return emailParams;
+  }
+
+  function getSubject(eventInfo){
+    const date = new Date(eventInfo.timestamp);
+    switch(eventInfo.type) {
+        case 'NO_MOVEMENT':
+            return `DOOR OPEN: NO_MOVEMENT at  ${date.getHours()}:${date.getMinutes()}`;         
+        case 'MOVEMENT_BEFORE_AND_AFTER':
+            return `DOOR OPEN: MOVEMENT BEFORE & AFTER at  ${date.getHours()}:${date.getMinutes()}`;
+        case 'EXITING':        
+            return `EXITING HOME -> at  ${date.getHours()}:${date.getMinutes()}`;
+        case 'ENTERING':
+            return `-> ENTERING HOME at  ${date.getHours()}:${date.getMinutes()}`;
+        default:
+      }
   }
 
   function getBase64Email(emailParams){
@@ -72,4 +86,4 @@ function getEmailParameters(eventInfo) {
   }
 
 
-exports.emailStream = oAuthGoogle;
+exports.emailStream = sendNotificationEmailStream;
