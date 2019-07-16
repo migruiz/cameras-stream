@@ -44,7 +44,7 @@ function getEmailParameters(eventInfo) {
     const emailParams = {
       fromName: 'homeentrance',
       fromAddress: 'migruizcameras@gmail.com',
-      to: 'mig.ruiz@gmail.com',
+      to: 'mig.ruiz@gmail.com,soniacarolina.blanco@gmail.com',
       subject:getSubject(eventInfo.sensor),
       body: htmlBody
     };
