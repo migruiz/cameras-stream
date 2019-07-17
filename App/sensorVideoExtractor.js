@@ -42,7 +42,7 @@ const joinFilesStream = (filesToJoinPath,targetFile) => Observable.create(subscr
     const params=  [
         '-y'
         , '-f'
-        , 'concat '
+        , 'concat'
         , '-safe'
         , '0'
         , '-i'
