@@ -46,7 +46,7 @@ const joinFilesStream = (filesToJoinPath,targetFile) => Observable.create(subscr
         , '-i'
         , filesToJoinPath
         , '-c'
-        , '-copy'
+        , 'copy'
         , targetFile
     ]);
     ffmpegChild.on('exit', function (code, signal) {
@@ -67,7 +67,7 @@ const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath)
         , '00:00:'
         ,  ("0" + VIDEOLENGTHSECS).slice(-2)
         , '-vcodec'
-        , '-copy'
+        , 'copy'
         , '-acodec'
         , 'copy'
         , targetVideoPath
