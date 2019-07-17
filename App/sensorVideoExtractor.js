@@ -36,8 +36,7 @@ of(sensorEvent).pipe(
 
 
 const joinFilesStream = (filesToJoinPath,targetFile) => Observable.create(subscriber => {   
-    var ffmpegChild = spawn(ffmpegFolder+'ffmpeg'
-    , [
+    const params=  [
         '-y'
         , '-f'
         , 'concat '
@@ -48,15 +47,29 @@ const joinFilesStream = (filesToJoinPath,targetFile) => Observable.create(subscr
         , '-c'
         , 'copy'
         , targetFile
-    ]);
+    ]
+    const ffmpegChild = spawn(ffmpegFolder+'ffmpeg',params);
+    console.log(params);
+    ffmpegChild.stdout.on('data', (data) => {
+        console.log(data);
+    });
+    ffmpegChild.stderr.on('data', (data) => {
+        console.error(`child stderr:\n${data}`);
+    });
     ffmpegChild.on('exit', function (code, signal) {
+        if (code) {
+            console.error('Child exited with code', code)
+          } else if (signal) {
+            console.error('Child was killed with signal', signal);
+          } else {
+            console.log('Child exited okay');
+          }
         subscriber.complete()
     });    
 });
 
 const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath) => Observable.create(subscriber => {   
-    var ffmpegChild = spawn(ffmpegFolder+'ffmpeg'
-    , [
+    const params = [
         '-y'
         , '-ss'
         , '00:00:'
@@ -71,7 +84,15 @@ const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath)
         , '-acodec'
         , 'copy'
         , targetVideoPath
-    ]);
+    ];
+    var ffmpegChild = spawn(ffmpegFolder+'ffmpeg',params );
+    console.log(params);
+    ffmpegChild.stdout.on('data', (data) => {
+        console.log(data);
+    });
+    ffmpegChild.stderr.on('data', (data) => {
+        console.error(`child stderr:\n${data}`);
+    });
     ffmpegChild.on('exit', function (code, signal) {
         if (code) {
             console.error('Child exited with code', code)
