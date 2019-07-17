@@ -21,7 +21,7 @@ const writeFileStream = (path,content) =>  Observable.create(subscriber => {
 
 const extractVideoStream = sensorEvent =>
 of(sensorEvent).pipe(
-    map(event => Object.assign({joinedStartAtMilis:event.segment.endTime - event.sensor.endVideoAt - VIDEOLENGTH}, event)),
+    map(event => Object.assign({joinedStartAtMilis:event.sensor.endVideoAt -event.segment.startTime  - VIDEOLENGTH}, event)),
     map(event => Object.assign({joinedStartAt:Math.round(parseFloat(event.joinedStartAtMilis/1000))}, event)),
     map(event => Object.assign({filesToJoinPath:`${videosFolderTemp}${event.sensor.timestamp}.txt`}, event)),
     map(event => Object.assign({joinedVideoPath:`${videosFolderTemp}${event.sensor.timestamp}_joined.mp4`}, event)),
