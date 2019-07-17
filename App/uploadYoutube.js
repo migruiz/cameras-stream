@@ -29,7 +29,7 @@ const uploadVideoStream =(auth,fileName) => from(
               description: 'Testing YouTube upload',
             },
             status: {
-              privacyStatus: 'private',
+              privacyStatus: 'unlisted',
             },
           },
           media: {
