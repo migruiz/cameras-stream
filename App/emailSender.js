@@ -39,7 +39,7 @@ const sendNotificationEmailStream = event => oAuthGoogle.pipe(
 
 
 function getEmailParameters(eventInfo) {
-    const body = 'youtube URL HERE'
+    const body = eventInfo.youtubeURL;
     const htmlBody = body.split('\n').join('\n<br>\n');
     const emailParams = {
       fromName: 'home',
