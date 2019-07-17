@@ -73,6 +73,13 @@ const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath)
         , targetVideoPath
     ]);
     ffmpegChild.on('exit', function (code, signal) {
+        if (code) {
+            console.error('Child exited with code', code)
+          } else if (signal) {
+            console.error('Child was killed with signal', signal);
+          } else {
+            console.log('Child exited okay');
+          }
         subscriber.complete()
     });    
 });
