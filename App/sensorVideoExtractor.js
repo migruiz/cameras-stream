@@ -75,13 +75,11 @@ const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath)
     const params = [
         '-y'
         , '-ss'
-        , '00:00:'
-        ,  ("0" + startPosition).slice(-2)
+        , '00:00:' + ("0" + startPosition).slice(-2)
         , '-i'
         , joinedVideoPath
         , '-t'
-        , '00:00:'
-        ,  ("0" + VIDEOLENGTHSECS).slice(-2)
+        , '00:00:' + ("0" + VIDEOLENGTHSECS).slice(-2)
         , '-vcodec'
         , 'copy'
         , '-acodec'
