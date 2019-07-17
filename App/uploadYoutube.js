@@ -5,67 +5,67 @@
  */
 
 const fs = require('fs');
+const util = require('util');
 const readline = require('readline');
+const { from,of,Observable,forkJoin } = require('rxjs');
+const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap} = require('rxjs/operators');
 
 const {google} = require('googleapis');
-const sampleClient = require('../sampleclient');
 
-// initialize the Youtube API library
-const youtube = google.youtube({
-  version: 'v3',
-  auth: sampleClient.oAuth2Client,
-});
 
-// very basic example of uploading a video to youtube
-async function runSample(fileName) {
-  const fileSize = fs.statSync(fileName).size;
-  const res = await youtube.videos.insert(
-    {
-      part: 'id,snippet,status',
-      notifySubscribers: false,
-      requestBody: {
-        snippet: {
-          title: 'Node.js YouTube Upload Test',
-          description: 'Testing YouTube upload via Google APIs Node.js Client',
+const fileStream = path =>  from(util.promisify(fs.readFile)(path));
+const uploadVideoStream =(auth,fileName) => from(
+
+    google.youtube({
+        version: 'v3',
+        auth: auth,
+      }).videos.insert(
+        {
+          part: 'id,snippet,status',
+          notifySubscribers: false,
+          requestBody: {
+            snippet: {
+              title: 'Video CAM',
+              description: 'Testing YouTube upload',
+            },
+            status: {
+              privacyStatus: 'private',
+            },
+          },
+          media: {
+            body: fs.createReadStream(fileName),
+          },
         },
-        status: {
-          privacyStatus: 'private',
-        },
-      },
-      media: {
-        body: fs.createReadStream(fileName),
-      },
-    },
-    {
-      // Use the `onUploadProgress` event from Axios to track the
-      // number of bytes uploaded to this point.
-      onUploadProgress: evt => {
-        const progress = (evt.bytesRead / fileSize) * 100;
-        readline.clearLine(process.stdout, 0);
-        readline.cursorTo(process.stdout, 0, null);
-        process.stdout.write(`${Math.round(progress)}% complete`);
-      },
-    }
-  );
-  console.log('\n\n');
-  console.log(res.data);
-  return res.data;
-}
+        {
+          onUploadProgress: evt => {
 
-const scopes = [
-  'https://www.googleapis.com/auth/youtube.upload',
-  'https://www.googleapis.com/auth/youtube',
-];
+          },
+        }
+      )
 
-if (module === require.main) {
-  const fileName = process.argv[2];
-  sampleClient
-    .authenticate(scopes)
-    .then(() => runSample(fileName))
-    .catch(console.error);
-}
+);
 
-module.exports = {
-  runSample,
-  client: sampleClient.oAuth2Client,
-};
+
+const oAuthGoogle = fileStream('/secrets/credentialsCam.json').pipe
+(
+    map(cr => JSON.parse(cr)),
+    map(cr => new google.auth.OAuth2(cr.installed.client_id, cr.installed.client_secret, cr.installed.redirect_uris[0])),
+)
+const oUathToken = fileStream('/secrets/tokenCam.json').pipe
+(
+    map(cr => JSON.parse(cr))
+)
+
+
+
+const uploadCompleteStream = fileName => oAuthGoogle.pipe(
+    map(oUth => ({oUth})),
+    mergeMap(v => oUathToken.pipe(map(token => Object.assign({token}, v)))),
+    tap(v => v.oUth.setCredentials(v.token)),
+    mergeMap(v => uploadVideoStream(v.oUth,fileName)),
+    map(v => `https://youtu.be/${v.data.id}`),
+    tap(v => console.log(v.status))
+)
+
+
+exports.uploadVideoStream = uploadCompleteStream
