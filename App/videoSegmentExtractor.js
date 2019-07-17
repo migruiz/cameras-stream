@@ -25,8 +25,8 @@ const segmentStream = videoFilesStream.pipe(
     map(videoInfo => (
         {
             fileName:videoInfo.format.filename,
-            startTime:parseInt(path.basename(videoInfo.format.filename,'.mp4')),            
-            length:Math.round(parseFloat(videoInfo.format.duration))
+            startTime:1000 * parseInt(path.basename(videoInfo.format.filename,'.mp4')),            
+            length:1000 * Math.round(parseFloat(videoInfo.format.duration))
         }
     )),
     map(videoInfo => Object.assign({endTime:videoInfo.startTime+videoInfo.length}, videoInfo)),

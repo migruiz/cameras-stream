@@ -29,7 +29,7 @@ const videoFileStream = Observable.create(subscriber => {
         , '30'
         , '-segment_format'
         , 'mp4'
-        , videosFolder + '%s.mp4'
+        , videosFolder + '%Y-%m-%d_%H-%M-%S.mp4'
     ]);
     ffmpegChild.on('exit', function (code, signal) {
         console.log("terminated");

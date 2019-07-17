@@ -42,9 +42,9 @@ function getEmailParameters(eventInfo) {
     const body = 'youtube URL HERE'
     const htmlBody = body.split('\n').join('\n<br>\n');
     const emailParams = {
-      fromName: 'homeentrance',
+      fromName: 'home',
       fromAddress: 'migruizcameras@gmail.com',
-      to: 'mig.ruiz@gmail.com,soniacarolina.blanco@gmail.com',
+      to: 'mig.ruiz@gmail.com',
       subject:getSubject(eventInfo.sensor),
       body: htmlBody
     };

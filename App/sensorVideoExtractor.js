@@ -7,7 +7,8 @@ const util = require('util');
 const videosFolder = '/videos/'
 const videosFolderTemp = `${videosFolder}temp/`
 const ffmpegFolder = '/ffmpeg/';
-const VIDEOLENGTH = 30;
+const VIDEOLENGTHSECS = 30;
+const VIDEOLENGTH = VIDEOLENGTHSECS * 1000;
 
 const writeFileStream = (path,content) =>  Observable.create(subscriber => {  
     fs.writeFile(path, content, function (err) {
@@ -20,7 +21,7 @@ const writeFileStream = (path,content) =>  Observable.create(subscriber => {
 
 const extractVideoStream = sensorEvent =>
 of(sensorEvent).pipe(
-    map(event => Object.assign({joinedStartAtMilis:event.segment.endTime - event.sensor.endVideoAt - VIDEOLENGTH * 1000}, event)),
+    map(event => Object.assign({joinedStartAtMilis:event.segment.endTime - event.sensor.endVideoAt - VIDEOLENGTH}, event)),
     map(event => Object.assign({joinedStartAt:Math.round(parseFloat(event.joinedStartAtMilis/1000))}, event)),
     map(event => Object.assign({filesToJoinPath:`${videosFolderTemp}${event.sensor.timestamp}.txt`}, event)),
     map(event => Object.assign({joinedVideoPath:`${videosFolderTemp}${event.sensor.timestamp}_joined.mp4`}, event)),
@@ -64,7 +65,7 @@ const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath)
         , joinedVideoPath
         , '-t'
         , '00:00:'
-        ,  ("0" + VIDEOLENGTH).slice(-2)
+        ,  ("0" + VIDEOLENGTHSECS).slice(-2)
         , '-vcodec'
         , '-copy'
         , '-acodec'
