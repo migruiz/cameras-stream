@@ -1,7 +1,7 @@
 'use strict';
 var spawn = require('child_process').spawn;
 const { Observable,of} = require('rxjs');
-const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap} = require('rxjs/operators');
+const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,endWith} = require('rxjs/operators');
 const fs = require('fs');
 const util = require('util');
 const videosFolder = '/videos/'
@@ -12,7 +12,9 @@ const VIDEOLENGTH = VIDEOLENGTHSECS * 1000;
 
 const writeFileStream = (path,content) =>  Observable.create(subscriber => {  
     fs.writeFile(path, content, function (err) {
-        if (err) subscriber.error(err)
+        if (err) {
+            subscriber.error(err)
+        }
         subscriber.complete();
     });
 });
@@ -28,9 +30,10 @@ of(sensorEvent).pipe(
     map(event => Object.assign({targetVideoPath:`${videosFolderTemp}${event.sensor.timestamp}.mp4`}, event)),
     map(event => Object.assign({filesToJoinContent:event.segment.filesToJoin.map(v => `file ${v}`).join('\r\n')}, event)),
     tap(v=> console.log(JSON.stringify(v))),
-    mergeMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent).pipe(mapTo(v))),
-    mergeMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(mapTo(v))),
-    mergeMap(v => ffmpegextractVideoStream(v.joinedStartAt,v.joinedVideoPath,v.targetVideoPath).pipe(mapTo(v))),
+    mergeMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent).pipe(endWith(v))),
+    tap(v=> console.log(JSON.stringify(v))),
+    mergeMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(endWith(v))),
+    mergeMap(v => ffmpegextractVideoStream(v.joinedStartAt,v.joinedVideoPath,v.targetVideoPath).pipe(endWith(v))),
     map(event => event.targetVideoPath),
 );
 
