@@ -59,7 +59,7 @@ doorOpenStream = doorOpenStream.pipe(
 
 function getDelay(endVideoAt){
     const currentTime = (new Date).getTime();
-    if (currentTime > endVideoAt)
+    if (currentTime < endVideoAt)
         return 0;
     return endVideoAt - currentTime;
 }
