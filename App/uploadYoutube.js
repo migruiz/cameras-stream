@@ -7,13 +7,14 @@
 const fs = require('fs');
 const util = require('util');
 const readline = require('readline');
-const { from,of,Observable,forkJoin,iif,throwError } = require('rxjs');
-const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError} = require('rxjs/operators');
+const { from,of,Observable,forkJoin,iif,throwError,defer } = require('rxjs');
+const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap} = require('rxjs/operators');
 
 const {google} = require('googleapis');
 
 
 const fileStream = path =>  from(util.promisify(fs.readFile)(path));
+const readDirStream = path =>  from(util.promisify(fs.readdir)(path));
 const uploadVideoStream =(auth,fileName) => from(
 
     google.youtube({
@@ -55,10 +56,7 @@ const oUathToken = fileName =>  fileStream(fileName).pipe
 
 
 
-const projects =[{
-  credential: '/secrets/credentialsCam.json',
-  token: '/secrets/tokenCam.json'
-}]
+
 
 const uploadCompleteStream = (authInfo,videofileName) => oAuthGoogle(authInfo.credential).pipe(
     map(oUth => ({oUth})),
@@ -69,11 +67,25 @@ const uploadCompleteStream = (authInfo,videofileName) => oAuthGoogle(authInfo.cr
 
 
 
-const uploadYoutubeQuotaStream = (index,videofileName) => uploadCompleteStream(projects[index],videofileName)
+const uploadYoutubeQuotaStream = (projects,index,videofileName) => uploadCompleteStream(projects[index],videofileName)
   .pipe(  
-    catchError(err => iif(4==3), uploadYoutubeQuotaStream(index + 1,videofileName), throwError(err).pipe(tap(err => console.log(err))))
+    catchError(err => iif(() => index < projects.length - 1 && err.code===403,  defer(() => uploadYoutubeQuotaStream(projects,index+1,videofileName)), throwError(err) ) )
     )
 
-const resultStream = videofileName => uploadYoutubeQuotaStream(0,videofileName)
+const credesDir = '/secrets/yt'
+const readDirsStream = 
+readDirStream(credesDir).pipe(
+  concatMap(v => v),
+  map(v => ({
+    credential: `${credesDir}/${v}/credentialsCam.json`,
+    token: `${credesDir}/${v}/tokenCam.json`
+  })),
+  tap(v=>console.log(v)),
+  toArray()
+)
+
+const resultStream = videofileName => readDirsStream.pipe(concatMap(arr=> uploadYoutubeQuotaStream(arr,0,videofileName)))
+
+
 
 exports.uploadVideoStream = resultStream
