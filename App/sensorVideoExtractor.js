@@ -80,9 +80,6 @@ const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath)
         , targetVideoPath
     ];
     var ffmpegChild = spawn(ffmpegFolder+'ffmpeg',params );
-    ffmpegChild.stderr.on('data', (data) => {
-        console.error(`child stderr:\n${data}`);
-    });
     ffmpegChild.on('exit', function (code, signal) {
         if (code) {
             console.error('Child exited with code', code)

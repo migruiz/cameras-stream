@@ -53,7 +53,6 @@ doorOpenStream = doorOpenStream.pipe(
     map( e => Object.assign({type:getEventType(e)}, e)),
     map( e => Object.assign({endVideoAt:getEndTime(e)}, e)),
     map( e => Object.assign({delayFor:getDelay(e.endVideoAt)}, e)),
-    tap( e => console.log(e)),
     mergeMap(e => of(e).pipe(delay(e.delayFor)))
 )
 

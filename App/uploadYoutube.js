@@ -64,7 +64,7 @@ const uploadCompleteStream = fileName => oAuthGoogle.pipe(
     tap(v => v.oUth.setCredentials(v.token)),
     mergeMap(v => uploadVideoStream(v.oUth,fileName)),
     map(v => `https://youtu.be/${v.data.id}`),
-    tap(v => console.log(v.status))
+    tap(v => console.log(v))
 )
 
 
