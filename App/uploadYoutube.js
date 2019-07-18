@@ -7,8 +7,8 @@
 const fs = require('fs');
 const util = require('util');
 const readline = require('readline');
-const { from,of,Observable,forkJoin } = require('rxjs');
-const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap} = require('rxjs/operators');
+const { from,of,Observable,forkJoin,iif,throwError } = require('rxjs');
+const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError} = require('rxjs/operators');
 
 const {google} = require('googleapis');
 
@@ -35,38 +35,45 @@ const uploadVideoStream =(auth,fileName) => from(
           media: {
             body: fs.createReadStream(fileName),
           },
-        },
-        {
-          onUploadProgress: evt => {
-
-          },
         }
       )
 
 );
 
 
-const oAuthGoogle = fileStream('/secrets/credentialsCam.json').pipe
+
+const oAuthGoogle = fileName => fileStream(fileName).pipe
 (
     map(cr => JSON.parse(cr)),
     map(cr => new google.auth.OAuth2(cr.installed.client_id, cr.installed.client_secret, cr.installed.redirect_uris[0])),
 )
-const oUathToken = fileStream('/secrets/tokenCam.json').pipe
+const oUathToken = fileName =>  fileStream(fileName).pipe
 (
     map(cr => JSON.parse(cr))
 )
 
 
 
-const uploadCompleteStream = fileName => oAuthGoogle.pipe(
+
+const projects =[{
+  credential: '/secrets/credentialsCam.json',
+  token: '/secrets/tokenCam.json'
+}]
+
+const uploadCompleteStream = (authInfo,videofileName) => oAuthGoogle(authInfo.credential).pipe(
     map(oUth => ({oUth})),
-    mergeMap(v => oUathToken.pipe(map(token => Object.assign({token}, v)))),
+    mergeMap(v => oUathToken(authInfo.token).pipe(map(token => Object.assign({token}, v)))),
     tap(v => v.oUth.setCredentials(v.token)),
-    mergeMap(v => uploadVideoStream(v.oUth,fileName)),
-    tap(v => console.log(v)),
-    map(v => `https://youtu.be/${v.data.id}`),
-    
+    mergeMap(v => uploadVideoStream(v.oUth,videofileName))    
 )
 
 
-exports.uploadVideoStream = uploadCompleteStream
+
+const uploadYoutubeQuotaStream = (index,videofileName) => uploadCompleteStream(projects[index],videofileName)
+  .pipe(  
+    catchError(err => iif(4==3), uploadYoutubeQuotaStream(index + 1,videofileName), throwError(err).pipe(tap(err => console.log(err))))
+    )
+
+const resultStream = videofileName => uploadYoutubeQuotaStream(0,videofileName)
+
+exports.uploadVideoStream = resultStream
