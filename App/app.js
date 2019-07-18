@@ -19,7 +19,7 @@ global.mtqqLocalPath = process.env.MQTTLOCAL;
 const  lastFfmpeg = videoFileStream.pipe(last())
 lastFfmpeg.pipe(expand(_ => lastFfmpeg)).subscribe();
 
-clearVideoStream.subscribe();
+//clearVideoStream.subscribe();
 
 
 
@@ -41,8 +41,8 @@ var combinedStream = sensorsReadingStream.pipe(
     mergeMap(([sensors, segment]) =>  from(sensors).pipe(map(sensor=>({sensor,segment})))),
     concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
     concatMap(v=> uploadVideoStream(v.extractedVideoPath).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
-    map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),
-    //mergeMap(v => removeFile(v.extractedVideoPath).pipe(endWith(v))),
+    //map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),
+    mergeMap(v => removeFile(v.extractedVideoPath).pipe(endWith(v))),
     mergeMap(v=> emailStream(v))
 
 )
