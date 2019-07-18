@@ -44,7 +44,7 @@ const uploadVideoStream =(auth,fileName) => from(
 
 
 const resultStream =function(fileName){
-  return oauthStream(auth => uploadVideoStream(auth,fileName))
+  return oauthStream(auth => uploadVideoStream(auth,fileName).pipe(map(v => `https://youtu.be/${v.data.id}`))  )
 }
 
 
