@@ -49,7 +49,7 @@ oauthStream(projects[index])
     catchError(err => iif(() => index < projects.length - 1 && err.code===403,  defer(() => executeRetryingStream(projects,index+1,oAuthProcess)), throwError(err) ) )
     )
 
-const credesDir = '/repos/secrets/cameras/secrets'
+const credesDir = '/secrets/'
 const readDirsStream = 
 readDirStream(credesDir).pipe(
   concatMap(v => v),
