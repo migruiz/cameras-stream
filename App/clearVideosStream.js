@@ -18,10 +18,10 @@ const resultStream =  readDirStream(videosFolder).pipe(
     concatMap(arr => from(arr)),
     tap(arr => console.log('deleting: ' + JSON.stringify(arr))),
     map(file =>({file:file,createdAt: parseInt(path.basename(file,'.mp4'))})),
-    filter(v => v.createdAt < ((new Date).getTime() -  60 * 60 * 2)),
+    filter(v => v.createdAt < ((new Date).getTime())),
     concatMap(e => removeFile(e.file))
 )
 
-const clearVideoStream = interval(60 * 60 * 1000).pipe(mergeMap(_ => resultStream))
+const clearVideoStream = interval(60  * 1000).pipe(mergeMap(_ => resultStream))
 
 exports.clearVideoStream = clearVideoStream
