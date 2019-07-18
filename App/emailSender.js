@@ -5,8 +5,6 @@ const util = require('util');
 const {google} = require('googleapis');
 
 
-
-const fileStream = path =>  from(util.promisify(fs.readFile)(path));
 const sendEmailStream =(auth,base64EncodedEmail) => from(google.gmail('v1').users.messages.send({
     auth: auth,
     userId: 'me',
@@ -15,25 +13,7 @@ const sendEmailStream =(auth,base64EncodedEmail) => from(google.gmail('v1').user
     }
   }));
 
-const oAuthGoogle = fileStream('/secrets/credentialsCam.json').pipe
-(
-    map(cr => JSON.parse(cr)),
-    map(cr => new google.auth.OAuth2(cr.installed.client_id, cr.installed.client_secret, cr.installed.redirect_uris[0])),
-)
-const oUathToken = fileStream('/secrets/tokenCam.json').pipe
-(
-    map(cr => JSON.parse(cr))
-)
 
-
-
-const sendNotificationEmailStream = event => oAuthGoogle.pipe(
-    map(oUth => ({oUth})),
-    mergeMap(v => oUathToken.pipe(map(token => Object.assign({token}, v)))),
-    tap(v => v.oUth.setCredentials(v.token)),
-    mergeMap(v => sendEmailStream(v.oUth,getBase64Email(getEmailParameters(event)))),
-    tap(v => console.log(v.status))
-)
 
 
 
@@ -86,4 +66,9 @@ function getEmailParameters(eventInfo) {
   }
 
 
-exports.emailStream = sendNotificationEmailStream;
+  const resultStream =function(event){
+    const base64Email = getBase64Email(getEmailParameters(event))
+    return oauthStream(auth => sendEmailStream(auth,base64Email))
+  }
+
+exports.emailStream = resultStream;
