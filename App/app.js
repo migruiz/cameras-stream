@@ -34,7 +34,6 @@ var combinedStream = sensorsReadingStream.pipe(
     mergeMap(([sensors, segment]) =>  from(sensors).pipe(map(sensor=>({sensor,segment})))),
     concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
     concatMap(v=> uploadVideoStream(v.extractedVideoPath).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),
-    tap(v => console.log(v)),
     mergeMap(v=> emailStream(v))
 
 )
