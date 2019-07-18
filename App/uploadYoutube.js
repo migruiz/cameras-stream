@@ -8,11 +8,12 @@ const fs = require('fs');
 const util = require('util');
 const readline = require('readline');
 const { from,of,Observable,forkJoin,iif,throwError,defer } = require('rxjs');
-const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap} = require('rxjs/operators');
+const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap,endWith} = require('rxjs/operators');
 const { oauthStream } = require('./googleOauth');
 const {google} = require('googleapis');
 
 
+const removeFile = path =>  from(util.promisify(fs.unlink)(path));
 
 const uploadVideoStream =(auth,fileName) => from(
 
@@ -44,7 +45,11 @@ const uploadVideoStream =(auth,fileName) => from(
 
 
 const resultStream =function(fileName){
-  return oauthStream(auth => uploadVideoStream(auth,fileName).pipe(map(v => `https://youtu.be/${v.data.id}`))  )
+  return oauthStream(auth => uploadVideoStream(auth,fileName))
+    .pipe(
+      mergeMap(v => removeFile(path).pipe(endWith(v))),
+      map(v => `https://youtu.be/${v.data.id}`)
+      );
 }
 
 

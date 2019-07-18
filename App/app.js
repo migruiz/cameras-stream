@@ -7,7 +7,10 @@ const { extractVideoStream } = require('./sensorVideoExtractor');
 const { emailStream } = require('./emailSender');
 const { uploadVideoStream } = require('./uploadYoutube');
 
+const fs = require('fs');
+const util = require('util');
 
+const removeFile = path =>  from(util.promisify(fs.unlink)(path));
 
 global.sensorReadingTopic = 'sensorReadingTopic';
 global.mtqqLocalPath = process.env.MQTTLOCAL;
@@ -34,6 +37,7 @@ var combinedStream = sensorsReadingStream.pipe(
     mergeMap(([sensors, segment]) =>  from(sensors).pipe(map(sensor=>({sensor,segment})))),
     concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
     concatMap(v=> uploadVideoStream(v.extractedVideoPath).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),
+    mergeMap(v => removeFile(v.extractedVideoPath).pipe(endWith(v))),
     mergeMap(v=> emailStream(v))
 
 )

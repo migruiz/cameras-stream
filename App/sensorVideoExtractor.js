@@ -10,6 +10,8 @@ const ffmpegFolder = '/ffmpeg/';
 const VIDEOLENGTHSECS = 30;
 const VIDEOLENGTH = VIDEOLENGTHSECS * 1000;
 
+const removeFile = path =>  from(util.promisify(fs.unlink)(path));
+
 const writeFileStream = (path,content) =>  Observable.create(subscriber => {  
     fs.writeFile(path, content, function (err) {
         if (err) {
@@ -33,6 +35,7 @@ of(sensorEvent).pipe(
     tap(v=> console.log(JSON.stringify(v))),
     mergeMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(endWith(v))),
     mergeMap(v => ffmpegextractVideoStream(v.joinedStartAt,v.joinedVideoPath,v.targetVideoPath).pipe(endWith(v))),
+    mergeMap(v => removeFile(v.joinedVideoPath).pipe(endWith(v))),
     map(event => event.targetVideoPath),
 );
 

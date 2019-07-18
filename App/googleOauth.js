@@ -57,7 +57,6 @@ readDirStream(credesDir).pipe(
     credential: `${credesDir}/${v}/credentialsCam.json`,
     token: `${credesDir}/${v}/tokenCam.json`
   })),
-  tap(v=>console.log(v)),
   toArray()
 )
 
