@@ -8,7 +8,7 @@ const fs = require('fs');
 const util = require('util');
 const path = require('path');
 const { from,of,Observable,forkJoin,iif,throwError,defer,interval } = require('rxjs');
-const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap,filter} = require('rxjs/operators');
+const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap} = require('rxjs/operators');
 
 const removeFile = path =>  from(util.promisify(fs.unlink)(path));
 const readDirStream = path =>  from(util.promisify(fs.readdir)(path));
