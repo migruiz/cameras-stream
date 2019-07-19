@@ -7,10 +7,10 @@
 const fs = require('fs');
 const util = require('util');
 const path = require('path');
-const { from,of,Observable,forkJoin,iif,throwError,defer,interval } = require('rxjs');
-const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap} = require('rxjs/operators');
+const { from,of,Observable,forkJoin,iif,throwError,defer,interval,empty } = require('rxjs');
+const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap,switchMapTo} = require('rxjs/operators');
 
-const removeFile = path =>  from(util.promisify(fs.unlink)(path));
+const removeFile = path =>  from(util.promisify(fs.unlink)(path)).pipe(switchMapTo(empty()));
 const readDirStream = path =>  from(util.promisify(fs.readdir)(path));
 const videosFolder = '/videos/'
 
@@ -18,6 +18,7 @@ const resultStream =  readDirStream(videosFolder).pipe(
     concatMap(arr => from(arr)),
     tap(arr => console.log('deleting: ' + JSON.stringify(arr))),
     map(file =>({file:file,createdAt: parseInt(path.basename(file,'.mp4'))})),
+    tap(arr => console.log('deleting now: ' + JSON.stringify(arr))),
     filter(v => v.createdAt < ((new Date).getTime())),
     concatMap(e => removeFile(e.file))
 )

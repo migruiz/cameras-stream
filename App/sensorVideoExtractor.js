@@ -1,7 +1,7 @@
 'use strict';
 var spawn = require('child_process').spawn;
-const { Observable,of,from} = require('rxjs');
-const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,endWith} = require('rxjs/operators');
+const { Observable,of,from,empty} = require('rxjs');
+const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,endWith,switchMapTo} = require('rxjs/operators');
 const fs = require('fs');
 const util = require('util');
 const videosFolder = '/videos/'
@@ -10,7 +10,7 @@ const ffmpegFolder = '/ffmpeg/';
 const VIDEOLENGTHSECS = 30;
 const VIDEOLENGTH = VIDEOLENGTHSECS * 1000;
 
-const removeFile = path =>  from(util.promisify(fs.unlink)(path));
+const removeFile = path =>  from(util.promisify(fs.unlink)(path)).pipe(switchMapTo(empty()));
 
 const writeFileStream = (path,content) =>  Observable.create(subscriber => {  
     fs.writeFile(path, content, function (err) {

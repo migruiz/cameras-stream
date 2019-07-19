@@ -1,5 +1,5 @@
-const { Observable,of,interval,timer,from} = require('rxjs');
-const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap} = require('rxjs/operators');
+const { Observable,of,interval,timer,from,empty} = require('rxjs');
+const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo} = require('rxjs/operators');
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
 const { videoSegmentStream } = require('./videoSegmentExtractor');
 const { sensorsReadingStream } = require('./sensorsStreamExtractor');
@@ -11,7 +11,7 @@ const { clearVideoStream } = require('./clearVideosStream');
 const fs = require('fs');
 const util = require('util');
 
-const removeFile = path =>  from(util.promisify(fs.unlink)(path));
+const removeFile = path =>  from(util.promisify(fs.unlink)(path)).pipe(switchMapTo(empty()));
 
 global.sensorReadingTopic = 'sensorReadingTopic';
 global.mtqqLocalPath = process.env.MQTTLOCAL;
@@ -19,7 +19,7 @@ global.mtqqLocalPath = process.env.MQTTLOCAL;
 const  lastFfmpeg = videoFileStream.pipe(last())
 lastFfmpeg.pipe(expand(_ => lastFfmpeg)).subscribe();
 
-//clearVideoStream.subscribe();
+clearVideoStream.subscribe();
 
 
 
@@ -42,7 +42,7 @@ var combinedStream = sensorsReadingStream.pipe(
     concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
     //concatMap(v=> uploadVideoStream(v.extractedVideoPath).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
     map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),
-    //mergeMap(v => removeFile(v.extractedVideoPath).pipe(endWith(v))),
+    mergeMap(v => removeFile(v.extractedVideoPath).pipe(endWith(v))),
     mergeMap(v=> emailStream(v))
 
 )
