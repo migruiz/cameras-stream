@@ -23,8 +23,9 @@ function getEmailParameters(eventInfo) {
     const htmlBody = body.split('\n').join('\n<br>\n');
     const emailParams = {
       fromName: 'home',
-      fromAddress: 'migruizcameras@gmail.com,soniacarolina.blanco@gmail.com',
+      fromAddress: 'entrancecamera123@gmail.com',
       to: 'mig.ruiz@gmail.com',
+      //to: 'mig.ruiz@gmail.com,soniacarolina.blanco@gmail.com',
       subject:getSubject(eventInfo.sensor),
       body: htmlBody
     };

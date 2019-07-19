@@ -34,6 +34,7 @@ of(sensorEvent).pipe(
     mergeMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent).pipe(endWith(v))),    
     mergeMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(endWith(v))),
     mergeMap(v => ffmpegextractVideoStream(v.joinedStartAt,v.joinedVideoPath,v.targetVideoPath).pipe(endWith(v))),
+    mergeMap(v => removeFile(v.filesToJoinPath).pipe(endWith(v))),
     mergeMap(v => removeFile(v.joinedVideoPath).pipe(endWith(v))),
     tap(v=> console.log(JSON.stringify(v))),
     map(event => event.targetVideoPath),
