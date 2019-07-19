@@ -14,7 +14,7 @@ const removeFile = path =>  from(util.promisify(fs.unlink)(path)).pipe(switchMap
 const readDirStream = path =>  from(util.promisify(fs.readdir)(path));
 const videosFolder = '/videos/'
 
-const resultStream =  readDirStream(videosFolder).pipe(
+const resultStream = videoPath =>   readDirStream(videoPath).pipe(
     concatMap(arr => from(arr)),
     tap(arr => console.log('deleting: ' + JSON.stringify(arr))),
     map(file =>({file:file,createdAt: parseInt(path.basename(file,'.mp4'))})),
@@ -23,6 +23,6 @@ const resultStream =  readDirStream(videosFolder).pipe(
     concatMap(e => removeFile(e.file))
 )
 
-const clearVideoStream = interval(60  * 1000).pipe(mergeMap(_ => resultStream))
+const clearVideoStream = interval(60  * 1000).pipe(mergeMap(_ => resultStream(videosFolder)))
 
 exports.clearVideoStream = clearVideoStream

@@ -5,8 +5,7 @@ const { Observable} = require('rxjs');
 const videosFolder = '/videos/'
 const ffmpegFolder = '/ffmpeg/';
 
-const videoFileStream = Observable.create(subscriber => {  
-    console.log('subscribing ffmpeg')   
+const videoFileStream = Observable.create(subscriber => {   
     var ffmpegChild = spawn(ffmpegFolder+'ffmpeg'
     , [
         '-loglevel'
@@ -32,7 +31,6 @@ const videoFileStream = Observable.create(subscriber => {
         , videosFolder + '%s.mp4'
     ]);
     ffmpegChild.on('exit', function (code, signal) {
-        console.log("terminated");
         subscriber.complete()
     });    
     subscriber.next(ffmpegChild) 
