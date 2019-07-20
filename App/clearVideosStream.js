@@ -16,8 +16,8 @@ const videosFolder = '/videos/'
 
 const resultStream = videoPath =>   readDirStream(videoPath).pipe(
     concatMap(arr => from(arr)),
-    map(file =>({file:file,createdAt: parseInt(path.basename(file,'.mp4'))})),
-    filter(v => v && v.createdAt < (new Date).getTime() - 10 * 60 ),
+    map(file =>({file:file,createdAt: 1000 * parseInt(path.basename(file,'.mp4'))})),
+    filter(v => v && v.createdAt < (new Date).getTime() - 10 * 60 * 1000),
     concatMap(e => removeFile(videosFolder + e.file))
 )
 
