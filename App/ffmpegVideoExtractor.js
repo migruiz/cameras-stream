@@ -31,6 +31,13 @@ const videoFileStream = Observable.create(subscriber => {
         , videosFolder + '%s.mp4'
     ]);
     ffmpegChild.on('exit', function (code, signal) {
+        if (code) {
+            console.error('ffmpeg exited with code', code)
+          } else if (signal) {
+            console.error('ffmpeg was killed with signal', signal);
+          } else {
+            console.log('ffmpeg exited okay');
+          }
         subscriber.complete()
     });    
     subscriber.next(ffmpegChild) 

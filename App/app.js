@@ -11,7 +11,7 @@ const { clearVideoStream } = require('./clearVideosStream');
 const fs = require('fs');
 const util = require('util');
 
-const removeFile = path =>  from(util.promisify(fs.unlink)(path)).pipe(switchMapTo(empty()));
+
 
 global.sensorReadingTopic = 'sensorReadingTopic';
 global.mtqqLocalPath = process.env.MQTTLOCAL;
@@ -25,10 +25,8 @@ clearVideoStream.subscribe();
 
 
 var videoHandleStreamError = videoSegmentStream.pipe(
-    catchError(error => timer(60*1000).pipe(
-        map(_ => console.log("restartong camera")),
-        delay(40*1000),
-        tap(_ => console.log("listeng again")),
+    catchError(error => of(error).pipe(
+        tap(err => console.log("restarting camera ",err)),
         mergeMap(_ => videoHandleStreamError)
         )
     )    
