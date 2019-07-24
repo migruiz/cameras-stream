@@ -7,13 +7,14 @@ const { extractVideoStream } = require('./sensorVideoExtractor');
 const { emailStream } = require('./emailSender');
 const { uploadVideoStream } = require('./uploadYoutube');
 const { clearVideoStream } = require('./clearVideosStream');
-
+var mqtt = require('./mqttCluster.js');
 const fs = require('fs');
 const util = require('util');
 
 
 
 global.sensorReadingTopic = 'sensorReadingTopic';
+global.restartCameraTopic="restartCameraTopic"
 global.mtqqLocalPath = process.env.MQTTLOCAL;
 
 const  lastFfmpeg = videoFileStream.pipe(last())
@@ -22,11 +23,15 @@ lastFfmpeg.pipe(expand(_ => lastFfmpeg)).subscribe();
 clearVideoStream.subscribe();
 
 
-
+async function triggerRestartCamera(){
+    var mqttCluster=await mqtt.getClusterAsync()
+    mqttCluster.publishData(restartCameraTopic,{})
+}
 
 var videoHandleStreamError = videoSegmentStream.pipe(
     catchError(error => of(error).pipe(
         tap(err => console.log("restarting camera ",err)),
+        mergeMap(err => from(triggerRestartCamera()).pipe(endWith(err))),
         mergeMap(_ => videoHandleStreamError)
         )
     )    
