@@ -18,7 +18,9 @@ global.restartCameraTopic="restartCameraTopic"
 global.mtqqLocalPath = process.env.MQTTLOCAL;
 
 const  lastFfmpeg = videoFileStream.pipe(last())
-lastFfmpeg.pipe(expand(_ => lastFfmpeg)).subscribe();
+var ffmpegProcessStream = lastFfmpeg.pipe(expand(_ => lastFfmpeg),share());
+
+ffmpegProcessStream.subscribe(c => console.log(c))
 
 clearVideoStream.subscribe();
 
@@ -31,7 +33,8 @@ async function triggerRestartCamera(){
 var videoHandleStreamError = videoSegmentStream.pipe(
     catchError(error => of(error).pipe(
         tap(err => console.log("restarting camera ",err)),
-        mergeMap(err => from(triggerRestartCamera()).pipe(endWith(err))),
+        withLatestFrom(ffmpegProcessStream),
+        tap(([_, ffmpegProcess]) => {ffmpegProcess.kill()}),
         mergeMap(_ => videoHandleStreamError)
         )
     )    
