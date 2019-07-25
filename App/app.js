@@ -33,7 +33,8 @@ var videoHandleStreamError = videoSegmentStream.pipe(
     catchError(error => of(error).pipe(
         tap(err => console.log("restarting camera ",err)),
         withLatestFrom(ffmpegProcessStream),
-        tap(([_, ffmpegProcess]) => {ffmpegProcess.kill()}),
+        tap(([_, ffmpegProcess]) => {console.log('killing',ffmpegProcess.pid); ffmpegProcess.kill()}),
+        tap(([_, ffmpegProcess]) => {console.log('after killing',ffmpegProcess.pid);}),
         mergeMap(_ => videoHandleStreamError)
         )
     )    
