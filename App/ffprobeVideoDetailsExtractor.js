@@ -4,8 +4,7 @@ const { Observable} = require('rxjs');
 const ffmpegFolder = '/ffmpeg/';
 
 const probeVideoInfo= function(videoPath){
-    return new Observable(subscriber => {  
-        console.log('ffprobe',videoPath)   
+    return new Observable(subscriber => {          
         const ffprobe = spawn(ffmpegFolder+'ffprobe'
         , [
             '-v'
@@ -25,10 +24,17 @@ const probeVideoInfo= function(videoPath){
             console.error(`child stderr:\n${data}`);
         });
         ffprobe.on('exit', function (code, signal) {
-            console.log(JSON.stringify({code,signal}))
-            var info = JSON.parse(result);
-            subscriber.next(info);
-            subscriber.complete();
+            
+            try {
+                var info = JSON.parse(result);
+                subscriber.next(info);
+                subscriber.complete();
+            } catch (error) {
+                console.log('ffprobe',videoPath)   
+                console.log(JSON.stringify({code,signal}))
+                throw error;
+            }
+
         });
     });
 }
