@@ -32,7 +32,7 @@ async function triggerRestartCamera(){
 }
 
 const videoHandleStreamErrorFFMPEG = videoSegmentStream.pipe(    
-    timeout(1 * 60 * 1000),
+    timeout(2 * 60 * 1000),
     catchError(error => of(error).pipe(
         tap(err => console.log("killing ffmpeg after error extracting videos",err)),
         withLatestFrom(ffmpegProcessStream),
@@ -43,7 +43,7 @@ const videoHandleStreamErrorFFMPEG = videoSegmentStream.pipe(
 )  
 var sharedvideoHandleStreamErrorFFMPEG = videoHandleStreamErrorFFMPEG.pipe(share())
 const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(    
-    timeout(4 * 60 * 1000),
+    timeout(5 * 60 * 1000),
     catchError(error => of(error).pipe(
         tap(err => console.log("restarting cameras error extracting videos",err)),
         concatMap(err => from(triggerRestartCamera()).pipe(last(),mapTo(err))),
