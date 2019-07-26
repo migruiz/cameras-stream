@@ -32,11 +32,11 @@ const videoFileStream = Observable.create(subscriber => {
     ]);
     ffmpegChild.on('exit', function (code, signal) {
         if (code) {
-            console.error('ffmpeg exited with code', code)
+            //console.error('ffmpeg exited with code', code)
           } else if (signal) {
-            console.error('ffmpeg was killed with signal', signal);
+            //console.error('ffmpeg was killed with signal', signal);
           } else {
-            console.log('ffmpeg exited okay');
+            //console.log('ffmpeg exited okay');
           }
         subscriber.complete()
     });    

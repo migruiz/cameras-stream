@@ -18,7 +18,6 @@ const videoFilesStream = new Observable(subscriber => {
 })
 const segmentStream = videoFilesStream.pipe(
     filter(e => e.mask & Inotify.IN_CLOSE_WRITE),
-    timeout(60*1000),
     map(e => e.name),
     mergeMap(fileName => probeVideoInfo(videosFolder + fileName)),
     map(videoInfo => (

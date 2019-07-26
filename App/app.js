@@ -17,9 +17,9 @@ global.sensorReadingTopic = 'sensorReadingTopic';
 global.restartCameraTopic="restartCameraTopic"
 global.mtqqLocalPath = process.env.MQTTLOCAL;
 
-const  ffmpegProcessStream = videoFileStream.pipe(repeat(-1),shareReplay(1))
+const  ffmpegProcessStream = videoFileStream.pipe(repeat(),delay(500),shareReplay(1))
 
-ffmpegProcessStream.subscribe(c => console.log(c.pid))
+ffmpegProcessStream.subscribe();
 
 clearVideoStream.subscribe();
 
@@ -29,7 +29,8 @@ async function triggerRestartCamera(){
     mqttCluster.publishData(restartCameraTopic,{})
 }
 
-const videoHandleStreamError = videoSegmentStream.pipe(
+const videoHandleStreamError = videoSegmentStream.pipe(    
+    timeout(1 * 60 * 1000),
     catchError(error => of(error).pipe(
         tap(err => console.log("killing ffmpeg after error extracting videos",err)),
         withLatestFrom(ffmpegProcessStream),
@@ -37,7 +38,7 @@ const videoHandleStreamError = videoSegmentStream.pipe(
         mergeMap(_ => videoHandleStreamError)
         )
     ),
-    timeout(2 * 60 * 1000),
+    timeout(5 * 60 * 1000),
     catchError(error => of(error).pipe(
         tap(err => console.log("restarting cameras error extracting videos",err)),
         concatMap(_ => triggerRestartCamera()),
@@ -52,8 +53,8 @@ var combinedStream = sensorsReadingStream.pipe(
     withLatestFrom(sharedvideoSegmentStream),
     mergeMap(([sensors, segment]) =>  from(sensors).pipe(map(sensor=>({sensor,segment})))),
     concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
-    concatMap(v=> uploadVideoStream(v.extractedVideoPath).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
-    //map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),
+    //concatMap(v=> uploadVideoStream(v.extractedVideoPath).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
+    map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),
     mergeMap(v=> emailStream(v))
 
 )
