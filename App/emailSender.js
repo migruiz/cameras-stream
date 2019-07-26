@@ -19,7 +19,7 @@ const sendEmailStream =(auth,base64EncodedEmail) => from(google.gmail('v1').user
 
 
 function getEmailParameters(eventInfo) {
-    const body = eventInfo.youtubeURL;
+    const body = JSON.stringify(eventInfo) + '\n' + eventInfo.youtubeURL;
     const htmlBody = body.split('\n').join('\n<br>\n');
     const emailParams = {
       fromName: 'test',
