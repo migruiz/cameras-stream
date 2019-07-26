@@ -31,7 +31,7 @@ const probeVideoInfo= function(videoPath){
                 subscriber.complete();
             } catch (error) {
                 console.log('ffprobe',videoPath)   
-                console.log(JSON.stringify({code,signal}))
+                console.log(JSON.stringify({code,signal,result}))
                 throw error;
             }
 
