@@ -37,24 +37,24 @@ const videoHandleStreamErrorFFMPEG = videoSegmentStream.pipe(
         tap(([_, ffmpegProcess]) => ffmpegProcess.kill()),
         mergeMap(_ => videoHandleStreamErrorFFMPEG)
         )
-    ),
-    share()   
+    ) 
 )  
-const videoHandleStreamError = videoHandleStreamErrorFFMPEG.pipe(    
-    timeout(5 * 60 * 1000),
+var sharedvideoHandleStreamErrorFFMPEG = videoHandleStreamErrorFFMPEG.pipe(share())
+const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(    
+    timeout(3 * 60 * 1000),
     catchError(error => of(error).pipe(
         tap(err => console.log("restarting cameras error extracting videos",err)),
-        concatMap(err => from(triggerRestartCamera()).pipe(last(),endWith(err))),
+        concatMap(err => from(triggerRestartCamera()).pipe(last(),mapTo(err))),
         tap(err => console.log(" after restarting cameras error extracting videos",err)),
         mergeMap(_ => videoHandleStreamError)
         )
-    ),
-    share()  
+    )
 )  
+var sharedvideoInfo = videoHandleStreamError.pipe(share())
 
 var combinedStream = sensorsReadingStream.pipe(
-    buffer(videoHandleStreamError),
-    withLatestFrom(videoHandleStreamError),
+    buffer(sharedvideoInfo),
+    withLatestFrom(sharedvideoInfo),
     mergeMap(([sensors, segment]) =>  from(sensors).pipe(map(sensor=>({sensor,segment})))),
     concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
     //concatMap(v=> uploadVideoStream(v.extractedVideoPath).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
