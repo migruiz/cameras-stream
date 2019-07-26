@@ -29,23 +29,28 @@ async function triggerRestartCamera(){
     mqttCluster.publishData(restartCameraTopic,{})
 }
 
-const videoHandleStreamError = videoSegmentStream.pipe(    
+const videoHandleStreamErrorFFMPEG = videoSegmentStream.pipe(    
     timeout(1 * 60 * 1000),
     catchError(error => of(error).pipe(
         tap(err => console.log("killing ffmpeg after error extracting videos",err)),
         withLatestFrom(ffmpegProcessStream),
         tap(([_, ffmpegProcess]) => ffmpegProcess.kill()),
-        mergeMap(_ => videoHandleStreamError)
+        mergeMap(_ => videoHandleStreamErrorFFMPEG)
         )
-    ),
-    timeout(5 * 60 * 1000),
+    )   
+)  
+const videoHandleStreamError = videoHandleStreamErrorFFMPEG.pipe(    
+    timeout(3 * 60 * 1000),
     catchError(error => of(error).pipe(
         tap(err => console.log("restarting cameras error extracting videos",err)),
         concatMap(_ => triggerRestartCamera()),
         mergeMap(_ => videoHandleStreamError)
         )
-    )     
+    )  
 )  
+
+
+    
 
 const sharedvideoSegmentStream = videoHandleStreamError.pipe(share());
 var combinedStream = sensorsReadingStream.pipe(
