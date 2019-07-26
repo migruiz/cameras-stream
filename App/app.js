@@ -1,5 +1,5 @@
 const { Observable,of,interval,timer,from,empty} = require('rxjs');
-const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat} = require('rxjs/operators');
+const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay} = require('rxjs/operators');
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
 const { videoSegmentStream } = require('./videoSegmentExtractor');
 const { sensorsReadingStream } = require('./sensorsStreamExtractor');
@@ -17,7 +17,7 @@ global.sensorReadingTopic = 'sensorReadingTopic';
 global.restartCameraTopic="restartCameraTopic"
 global.mtqqLocalPath = process.env.MQTTLOCAL;
 
-const  ffmpegProcessStream = videoFileStream.pipe(repeat(-1),share())
+const  ffmpegProcessStream = videoFileStream.pipe(repeat(-1),shareReplay(1))
 
 ffmpegProcessStream.subscribe(c => console.log(c.pid))
 
