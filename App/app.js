@@ -1,5 +1,5 @@
 const { Observable,of,interval,timer,from,empty} = require('rxjs');
-const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay} = require('rxjs/operators');
+const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay,timeout} = require('rxjs/operators');
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
 const { videoSegmentStream } = require('./videoSegmentExtractor');
 const { sensorsReadingStream } = require('./sensorsStreamExtractor');
@@ -29,15 +29,21 @@ async function triggerRestartCamera(){
     mqttCluster.publishData(restartCameraTopic,{})
 }
 
-var videoHandleStreamError = videoSegmentStream.pipe(
+const videoHandleStreamError = videoSegmentStream.pipe(
     catchError(error => of(error).pipe(
-        tap(err => console.log("restarting camera ",err)),
+        tap(err => console.log("killing ffmpeg after error extracting videos",err)),
         withLatestFrom(ffmpegProcessStream),
-        tap(([_, ffmpegProcess]) => {console.log('killing',ffmpegProcess.pid); ffmpegProcess.kill()}),
-        tap(([_, ffmpegProcess]) => {console.log('after killing',ffmpegProcess.pid);}),
+        tap(([_, ffmpegProcess]) => ffmpegProcess.kill()),
         mergeMap(_ => videoHandleStreamError)
         )
-    )    
+    ),
+    timeout(2 * 60 * 1000),
+    catchError(error => of(error).pipe(
+        tap(err => console.log("restarting cameras error extracting videos",err)),
+        concatMap(_ => triggerRestartCamera()),
+        mergeMap(_ => videoHandleStreamError)
+        )
+    )     
 )  
 
 const sharedvideoSegmentStream = videoHandleStreamError.pipe(share());
