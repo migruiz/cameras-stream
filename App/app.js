@@ -43,7 +43,9 @@ const videoHandleStreamError = videoHandleStreamErrorFFMPEG.pipe(
     timeout(3 * 60 * 1000),
     catchError(error => of(error).pipe(
         tap(err => console.log("restarting cameras error extracting videos",err)),
+        tap(c => console.log('beforetriggerRestartCamera',JSON.stringify(c))),
         concatMap(_ => triggerRestartCamera()),
+        tap(c => console.log('aftertriggerRestartCamera',JSON.stringify(c))),
         mergeMap(_ => videoHandleStreamError)
         )
     )  
