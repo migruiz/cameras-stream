@@ -1,4 +1,4 @@
-const { Observable,throwError,timer} = require('rxjs');
+const { Observable,throwError,timer,of} = require('rxjs');
 const { mergeMap,filter,map,pairwise,timeout,startWith,concat} = require('rxjs/operators');
 const { probeVideoInfo} = require('./ffprobeVideoDetailsExtractor');
 const path = require('path');
@@ -20,6 +20,7 @@ const segmentStream = videoFilesStream.pipe(
     filter(e => e.mask & Inotify.IN_CLOSE_WRITE),
     map(e => e.name),
     mergeMap(fileName => probeVideoInfo(videosFolder + fileName)),
+    mergeMap(videoInfo => videoInfo.format.duration < 20 ? throwError('Error length video') : of(videoInfo)),
     map(videoInfo => (
         {
             fileName:videoInfo.format.filename,
