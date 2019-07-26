@@ -36,7 +36,6 @@ of(sensorEvent).pipe(
     mergeMap(v => ffmpegextractVideoStream(v.joinedStartAt,v.joinedVideoPath,v.targetVideoPath).pipe(endWith(v))),
     mergeMap(v => removeFile(v.filesToJoinPath).pipe(endWith(v))),
     mergeMap(v => removeFile(v.joinedVideoPath).pipe(endWith(v))),
-    tap(v=> console.log(JSON.stringify(v))),
     map(event => event.targetVideoPath),
 );
 

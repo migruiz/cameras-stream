@@ -15,7 +15,7 @@ const {google} = require('googleapis');
 
 const removeFile = path =>  from(util.promisify(fs.unlink)(path));
 
-const uploadVideoStream =(auth,fileName) => from(
+const uploadVideoStream =(auth,info) => from(
 
     google.youtube({
         version: 'v3',
@@ -26,15 +26,15 @@ const uploadVideoStream =(auth,fileName) => from(
           notifySubscribers: false,
           requestBody: {
             snippet: {
-              title: 'Video CAM',
-              description: 'Testing YouTube upload',
+              title: info.type,
+              description: JSON.stringify(info),
             },
             status: {
               privacyStatus: 'unlisted',
             },
           },
           media: {
-            body: fs.createReadStream(fileName),
+            body: fs.createReadStream(info.extractedVideoPath),
           },
         }
       )
@@ -44,8 +44,8 @@ const uploadVideoStream =(auth,fileName) => from(
 
 
 
-const resultStream =function(fileName){
-  return oauthStream(auth => uploadVideoStream(auth,fileName))
+const resultStream =function(info){
+  return oauthStream(auth => uploadVideoStream(auth,info))
     .pipe(
       //mergeMap(v => removeFile(path).pipe(endWith(v))),
       map(v => `https://youtu.be/${v.data.id}`)

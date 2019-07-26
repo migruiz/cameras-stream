@@ -5,7 +5,7 @@ const ffmpegFolder = '/ffmpeg/';
 
 const probeVideoInfo= function(videoPath){
     return new Observable(subscriber => {  
-        //console.log('subscribing probeVideoInfo')   
+        console.log('ffprobe',videoPath)   
         const ffprobe = spawn(ffmpegFolder+'ffprobe'
         , [
             '-v'
@@ -25,6 +25,7 @@ const probeVideoInfo= function(videoPath){
             console.error(`child stderr:\n${data}`);
         });
         ffprobe.on('exit', function (code, signal) {
+            console.log(JSON.stringify({code,signal}))
             var info = JSON.parse(result);
             subscriber.next(info);
             subscriber.complete();
