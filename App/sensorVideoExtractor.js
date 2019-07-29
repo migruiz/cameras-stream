@@ -101,11 +101,11 @@ const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath)
     });
     ffmpegChild.on('exit', function (code, signal) {
       if (code) {
-        console.log(JSON.stringify({filesToJoinPath,targetFile,code,signal,result,errorResult}))
-        subscriber.error('joinFilesStream error');
+        console.log(JSON.stringify({startPosition,joinedVideoPath,targetVideoPath,code,signal,result,errorResult}))
+        subscriber.error('ffmpegextractVideoStream error');
       } else if (signal) {
-        console.log(JSON.stringify({filesToJoinPath,targetFile,code,signal,result,errorResult}))
-        subscriber.error('joinFilesStream error');
+        console.log(JSON.stringify({startPosition,joinedVideoPath,targetVideoPath,code,signal,result,errorResult}))
+        subscriber.error('ffmpegextractVideoStream error');
       } else {
         subscriber.complete();
       }     

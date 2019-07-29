@@ -8,9 +8,7 @@ const ffmpegFolder = '/ffmpeg/';
 const videoFileStream = Observable.create(subscriber => {   
     var ffmpegChild = spawn(ffmpegFolder+'ffmpeg'
     , [
-        '-loglevel'
-        , 'panic'
-        , '-i'
+         '-i'
         , process.env.ENTRANCECAMRTSP
         , '-pix_fmt'
         , '+'
@@ -30,17 +28,27 @@ const videoFileStream = Observable.create(subscriber => {
         , 'mp4'
         , videosFolder + '%s.mp4'
     ]);
+    var result = '';
+    ffmpegChild.stdout.on('data', (data) => {
+        result += data.toString();
+    });
+    var errorResult = '';
+    ffmpegChild.stderr.on('data', (data) => {
+      errorResult += data.toString();
+    });
     ffmpegChild.on('exit', function (code, signal) {
-        if (code) {
-            //console.error('ffmpeg exited with code', code)
-          } else if (signal) {
-            //console.error('ffmpeg was killed with signal', signal);
-          } else {
-            //console.log('ffmpeg exited okay');
-          }
-        subscriber.complete()
-    });    
-    subscriber.next(ffmpegChild) 
+      if (code) {
+        console.log(JSON.stringify({code,signal,result,errorResult}))
+        subscriber.error('ffmpeg videoFileStream error');
+      } else if (signal) {
+        console.log(JSON.stringify({code,signal,result,errorResult}))
+        subscriber.error('ffmpeg videoFileStream  error');
+      } else {
+        subscriber.complete();
+      }     
+    }); 
+    subscriber.next(ffmpegChild)   
+    
 });
 
 
