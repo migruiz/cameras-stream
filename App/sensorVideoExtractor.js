@@ -54,16 +54,25 @@ const joinFilesStream = (filesToJoinPath,targetFile) => Observable.create(subscr
         , targetFile
     ]
     const ffmpegChild = spawn(ffmpegFolder+'ffmpeg',params);
+    var result = '';
+    ffmpegChild.stdout.on('data', (data) => {
+        result += data.toString();
+    });
+    var errorResult = '';
+    ffmpegChild.stderr.on('data', (data) => {
+      errorResult += data.toString();
+    });
     ffmpegChild.on('exit', function (code, signal) {
-        if (code) {
-            console.error('Child exited with code', code)
-          } else if (signal) {
-            console.error('Child was killed with signal', signal);
-          } else {
-            //console.log('Child exited okay');
-          }
-        subscriber.complete()
-    });    
+      if (code) {
+        console.log(JSON.stringify({filesToJoinPath,targetFile,code,signal,result,errorResult}))
+        subscriber.error('joinFilesStream error');
+      } else if (signal) {
+        console.log(JSON.stringify({filesToJoinPath,targetFile,code,signal,result,errorResult}))
+        subscriber.error('joinFilesStream error');
+      } else {
+        subscriber.complete();
+      }     
+    }); 
 });
 
 const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath) => Observable.create(subscriber => {   
@@ -81,17 +90,26 @@ const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath)
         , 'copy'
         , targetVideoPath
     ];
-    var ffmpegChild = spawn(ffmpegFolder+'ffmpeg',params );
+    const ffmpegChild = spawn(ffmpegFolder+'ffmpeg',params);
+    var result = '';
+    ffmpegChild.stdout.on('data', (data) => {
+        result += data.toString();
+    });
+    var errorResult = '';
+    ffmpegChild.stderr.on('data', (data) => {
+      errorResult += data.toString();
+    });
     ffmpegChild.on('exit', function (code, signal) {
-        if (code) {
-            console.error('Child exited with code', code)
-          } else if (signal) {
-            console.error('Child was killed with signal', signal);
-          } else {
-            //console.log('Child exited okay');
-          }
-        subscriber.complete()
-    });    
+      if (code) {
+        console.log(JSON.stringify({filesToJoinPath,targetFile,code,signal,result,errorResult}))
+        subscriber.error('joinFilesStream error');
+      } else if (signal) {
+        console.log(JSON.stringify({filesToJoinPath,targetFile,code,signal,result,errorResult}))
+        subscriber.error('joinFilesStream error');
+      } else {
+        subscriber.complete();
+      }     
+    }); 
 });
 
 
