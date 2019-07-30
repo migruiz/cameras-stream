@@ -1,5 +1,5 @@
 const { Observable,of,interval,timer,from,empty} = require('rxjs');
-const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay,timeout,first} = require('rxjs/operators');
+const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay,timeout,first,filter} = require('rxjs/operators');
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
 const { videoSegmentStream } = require('./videoSegmentExtractor');
 const { sensorsReadingStream } = require('./sensorsStreamExtractor');
@@ -52,16 +52,19 @@ const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(
         )
     )
 )  
-var sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(1))
-sharedvideoInfo.subscribe( c => console.log(JSON.stringify(c)))
+const sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(1))
 
-var combinedStream = sensorsReadingStream.pipe(    
-    tap(sensor =>  console.log(JSON.stringify(sensor))),
+const combinedStream = sensorsReadingStream.pipe(    
     mergeMap(sensor => sharedvideoInfo.pipe(
         first(segment => segment.startTime < sensor.startVideoAt && sensor.endVideoAt < segment.endTime),
-        map(segment => ({sensor,segment}))
-        )),
-    tap(sensor =>  console.log('after',JSON.stringify(sensor))),
+        map(segment => ({sensor,segment})),
+        timeoutWith(WAITFORMOVEMENT,of({sensor,error:"timeout segment"}))
+        ))
+    );
+    const sharedCombinedStream = sharedvideoInfo.pipe(share());
+
+ const noErrors = sharedCombinedStream.pipe(
+    filter( v=> !v.error),
     concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
     concatMap(v=> uploadVideoStream(v).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
     //map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),
@@ -70,4 +73,15 @@ var combinedStream = sensorsReadingStream.pipe(
     tap(_ => console.log("email sent"))
 
 )
+const withErrors = sharedCombinedStream.pipe(
+    filter( v=> v.error),
+    concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
+    concatMap(v=> uploadVideoStream(v).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
+    //map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),
+    mergeMap(v => removeFile(v.extractedVideoPath).pipe(endWith(v))),
+    mergeMap(v=> emailStream(v)),
+    tap(_ => console.log("email sent"))
+
+)
+
 combinedStream.subscribe();
