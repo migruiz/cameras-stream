@@ -1,5 +1,5 @@
 const { Observable,of,interval,timer,from,empty} = require('rxjs');
-const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay,timeout} = require('rxjs/operators');
+const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay,timeout,first} = require('rxjs/operators');
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
 const { videoSegmentStream } = require('./videoSegmentExtractor');
 const { sensorsReadingStream } = require('./sensorsStreamExtractor');
@@ -52,12 +52,13 @@ const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(
         )
     )
 )  
-var sharedvideoInfo = videoHandleStreamError.pipe(share())
+var sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(1))
 
 var combinedStream = sensorsReadingStream.pipe(
-    buffer(sharedvideoInfo),
-    withLatestFrom(sharedvideoInfo),
-    mergeMap(([sensors, segment]) =>  from(sensors).pipe(map(sensor=>({sensor,segment})))),
+    mergeMap(sensor => sharedvideoInfo.pipe(
+        first(segment => segment.startTime < sensor.startVideoAt && sensor.endVideoAt < segment.endTime),
+        map(segment => {sensor,segment})
+        )),
     concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
     concatMap(v=> uploadVideoStream(v).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
     //map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),

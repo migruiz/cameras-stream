@@ -52,6 +52,7 @@ var doorOpenStream = merge(beforeDoorStream,afterDoorStream).pipe(
 doorOpenStream = doorOpenStream.pipe(
     map( e => Object.assign({type:getEventType(e)}, e)),
     map( e => Object.assign({endVideoAt:getEndTime(e)}, e)),
+    map( e => Object.assign({startVideoAt: e.endVideoAt - VIDEOSEGMENTLENGTH}, e)),
 )
 
 
