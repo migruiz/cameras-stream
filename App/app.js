@@ -61,6 +61,7 @@ var combinedStream = sensorsReadingStream.pipe(
         first(segment => segment.startTime < sensor.startVideoAt && sensor.endVideoAt < segment.endTime),
         map(segment => {sensor,segment})
         )),
+    tap(sensor =>  console.log(JSON.stringify(sensor))),
     concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
     concatMap(v=> uploadVideoStream(v).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
     //map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),
