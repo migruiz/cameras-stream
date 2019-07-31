@@ -42,7 +42,7 @@ function getEmailParameters(eventInfo) {
         case 'EXITING':        
             return `<--🚪 EXITING HOME at  ${date.getHours()}:${date.getMinutes()}`;
         case 'ENTERING':
-            return `-->🏡 ENTERING HOME at  ${date.getHours()}:${date.getMinutes()}`;
+            return `-->=F0=9F=8F=A1 ENTERING HOME at ${date.getHours()}:${date.getMinutes()}`;
         default:
       }
   }
