@@ -40,9 +40,9 @@ function getEmailParameters(eventInfo) {
         case 'MOVEMENT_BEFORE_AND_AFTER':
             return `DOOR OPEN ⭕ MOVEMENT BEFORE & AFTER at  ${date.getHours()}:${date.getMinutes()}`;
         case 'EXITING':        
-            return `<--🚪 EXITING HOME at  ${date.getHours()}:${date.getMinutes()}`;
+            return `=?utf-8?Q?=3C--=F0=9F=9A=AA?= at  ${date.getHours()}:${date.getMinutes()}`;
         case 'ENTERING':
-            return `⭕ ENTERING HOME at ${date.getHours()}:${date.getMinutes()}`;
+            return `=?utf-8?Q?=3C--=F0=9F=9A=AA_ENTERING?=`;
         default:
       }
   }
