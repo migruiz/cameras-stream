@@ -76,11 +76,15 @@ const sensorSegmentStream = sensorsReadingStream.pipe(
 
 
 function extractVideo(v){
-    of(v).pipe(
+    return of(v).pipe(
+        tap(co => console.log("of(v)",JSON.stringify(co))),   
     concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
+    tap(co => console.log("concatMap(v=> extractVideoStream",JSON.stringify(co))),   
     concatMap(v=> uploadVideoStream(v).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
+    tap(co => console.log("concatMap(v=> uploadVideoStream(v)",JSON.stringify(co))),   
     //map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),
-    mergeMap(v => removeFile(v.extractedVideoPath).pipe(endWith(v)))
+    mergeMap(v => removeFile(v.extractedVideoPath).pipe(endWith(v))),
+    tap(co => console.log("mergeMap(v => removeFile",JSON.stringify(co))),   
     )
 }
 
