@@ -26,7 +26,7 @@ function getEmailParameters(eventInfo) {
       fromName: 'HOME',
       fromAddress: 'entrancecamera123@gmail.com',
       //to: 'mig.ruiz@gmail.com',
-      to: 'mig.ruiz@gmail.com',
+      to: 'mig.ruiz@gmail.com,soniacarolina.blanco@gmail.com',
       subject:getSubject(eventInfo.sensor),
       body: htmlBody
     };
@@ -37,13 +37,13 @@ function getEmailParameters(eventInfo) {
     const date = new Date(eventInfo.timestamp);
     switch(eventInfo.type) {
         case 'NO_MOVEMENT':
-            return `=?utf-8?Q?DOOR_OPEN_=E2=9D=8C_NO_MOVEMENT_at_${dateFormat(date, "h:MM:ss TT")}?=`;         
+            return `=?utf-8?Q?DOOR_OPEN_=E2=9D=8C_NO_MOVEMENT_at_${dateFormat(date, "h:MM TT")}?=`;         
         case 'MOVEMENT_BEFORE_AND_AFTER':
-            return `=?utf-8?Q?DOOR_OPEN_=E2=AD=95_MOVEMENT_BEFORE_=26_AFTER_at_${dateFormat(date, "h:MM:ss TT")}?=`;         
+            return `=?utf-8?Q?DOOR_OPEN_=E2=AD=95_MOVEMENT_BEFORE_=26_AFTER_at_${dateFormat(date, "h:MM TT")}?=`;         
         case 'EXITING':        
-            return `=?utf-8?Q?=3C--=F0=9F=9A=AA_EXITING_at_${dateFormat(date, "h:MM:ss TT")}?=`;         
+            return `=?utf-8?Q?=3C--=F0=9F=9A=AA_EXITING_at_${dateFormat(date, "h:MM TT")}?=`;         
         case 'ENTERING':
-            return  `=?utf-8?Q?--=3E=F0=9F=8F=A1_ENTERING_at_${dateFormat(date, "h:MM:ss TT")}?=`;         
+            return  `=?utf-8?Q?--=3E=F0=9F=8F=A1_ENTERING_at_${dateFormat(date, "h:MM TT")}?=`;         
         default:
       }
   }
