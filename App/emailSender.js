@@ -42,7 +42,7 @@ function getEmailParameters(eventInfo) {
         case 'EXITING':        
             return `<--🚪 EXITING HOME at  ${date.getHours()}:${date.getMinutes()}`;
         case 'ENTERING':
-            return `-->=F0=9F=8F=A1 ENTERING HOME at ${date.getHours()}:${date.getMinutes()}`;
+            return `⭕ ENTERING HOME at ${date.getHours()}:${date.getMinutes()}`;
         default:
       }
   }
@@ -53,7 +53,7 @@ function getEmailParameters(eventInfo) {
 
     email_lines.push('From: "'+ emailParams.fromName + '" <' + emailParams.fromAddress + '>');
     email_lines.push('To: '+ emailParams.to);
-    email_lines.push('Content-type: text/html;charset=iso-8859-1');
+    email_lines.push('Content-type: text/html;charset=UTF-8');
     email_lines.push('MIME-Version: 1.0');
     email_lines.push('Subject: ' + emailParams.subject);
     email_lines.push('');
