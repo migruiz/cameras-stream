@@ -53,21 +53,13 @@ const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(
 const sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(1))
 
 const sensorSegmentStream = sensorsReadingStream.pipe(   
-    tap(co => console.log("sensorSegmentStream",JSON.stringify(co))), 
     mergeMap(sensor => sharedvideoInfo.pipe(
-        tap(co => console.log("sharedvideoInfo",JSON.stringify(co))), 
         first(segment => segment.startTime < sensor.startVideoAt && sensor.endVideoAt < segment.endTime),
-        tap(co => console.log("first(segment",JSON.stringify(co))), 
         map(segment => ({sensor,segment})),
-        tap(co => console.log("map(segment",JSON.stringify(co))), 
         timeout(60 * 1000),
-        tap(co => console.log("timeout",JSON.stringify(co))), 
-        mergeMap(p => extractVideo(p)),
-        tap(co => console.log("mergeMap(p",JSON.stringify(co))), 
-        catchError(error => of({sensor,error})),     
-        tap(co => console.log("catchError",JSON.stringify(co))),    
+        mergeMap(p => extractVideo(p)), 
+        catchError(error => of({sensor,error})),        
         mergeMap(v=> emailStream(v)),
-        tap(_ => console.log("email sent"))
     )   
     )
 );
@@ -77,14 +69,10 @@ const sensorSegmentStream = sensorsReadingStream.pipe(
 
 function extractVideo(v){
     return of(v).pipe(
-        tap(co => console.log("of(v)",JSON.stringify(co))),   
-    concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
-    tap(co => console.log("concatMap(v=> extractVideoStream",JSON.stringify(co))),   
-    concatMap(v=> uploadVideoStream(v).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
-    tap(co => console.log("concatMap(v=> uploadVideoStream(v)",JSON.stringify(co))),   
+    concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))), 
+    concatMap(v=> uploadVideoStream(v).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),   
     //map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),
     mergeMap(v => removeFile(v.extractedVideoPath).pipe(endWith(v))),
-    tap(co => console.log("mergeMap(v => removeFile",JSON.stringify(co))),   
     )
 }
 

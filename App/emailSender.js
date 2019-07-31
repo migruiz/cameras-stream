@@ -36,13 +36,13 @@ function getEmailParameters(eventInfo) {
     const date = new Date(eventInfo.timestamp);
     switch(eventInfo.type) {
         case 'NO_MOVEMENT':
-            return `DOOR OPEN: NO_MOVEMENT at  ${date.getHours()}:${date.getMinutes()}`;         
+            return `DOOR OPEN ❌ NO_MOVEMENT at  ${date.getHours()}:${date.getMinutes()}`;         
         case 'MOVEMENT_BEFORE_AND_AFTER':
-            return `DOOR OPEN: MOVEMENT BEFORE & AFTER at  ${date.getHours()}:${date.getMinutes()}`;
+            return `DOOR OPEN ⭕ MOVEMENT BEFORE & AFTER at  ${date.getHours()}:${date.getMinutes()}`;
         case 'EXITING':        
-            return `<-- EXITING HOME at  ${date.getHours()}:${date.getMinutes()}`;
+            return `<--🚪 EXITING HOME at  ${date.getHours()}:${date.getMinutes()}`;
         case 'ENTERING':
-            return `--> ENTERING HOME at  ${date.getHours()}:${date.getMinutes()}`;
+            return `-->🏡 ENTERING HOME at  ${date.getHours()}:${date.getMinutes()}`;
         default:
       }
   }
