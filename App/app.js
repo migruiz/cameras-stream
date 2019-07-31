@@ -1,5 +1,5 @@
 const { Observable,of,interval,timer,from,empty} = require('rxjs');
-const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay,timeout,first} = require('rxjs/operators');
+const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay,timeout,first,filter,merge} = require('rxjs/operators');
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
 const { videoSegmentStream } = require('./videoSegmentExtractor');
 const { sensorsReadingStream } = require('./sensorsStreamExtractor');
@@ -45,27 +45,39 @@ var sharedvideoHandleStreamErrorFFMPEG = videoHandleStreamErrorFFMPEG.pipe(share
 const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(    
     timeout(5 * 60 * 1000),
     catchError(error => of(error).pipe(
-        tap(err => console.log("restarting cameras error extracting videos",err)),
         concatMap(err => from(triggerRestartCamera()).pipe(last(),mapTo(err))),
-        tap(err => console.log(" after restarting cameras error extracting videos",err)),
         mergeMap(_ => videoHandleStreamError)
         )
     )
 )  
-var sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(1))
+const sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(1))
 
-var combinedStream = sensorsReadingStream.pipe(    
+const sensorSegmentStream = sensorsReadingStream.pipe(    
     mergeMap(sensor => sharedvideoInfo.pipe(
         first(segment => segment.startTime < sensor.startVideoAt && sensor.endVideoAt < segment.endTime),
-        map(segment => ({sensor,segment}))
+        map(segment => ({sensor,segment})),
+        timeoutWith(60 * 1000,of({sensor,error:"timeout segment"}))
         )),
-    tap(sensor =>  console.log('after',JSON.stringify(sensor))),
+    mergeMap(c => merge(
+        of(c).pipe(filter( v=> !v.error),mergeMap(p => extractVideo(p))),
+        of(c).pipe(filter( v=> v.error))
+        )
+    ),
+    mergeMap(v=> emailStream(v)),
+    tap(_ => console.log("email sent"))
+);
+    
+
+
+function extractVideo(v){
+    of(v).pipe(
     concatMap(v=> extractVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))),
     concatMap(v=> uploadVideoStream(v).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),    
     //map(v => Object.assign({youtubeURL:'https://youtu.be/Nl4dVgaibEc'},v)),
     mergeMap(v => removeFile(v.extractedVideoPath).pipe(endWith(v))),
-    mergeMap(v=> emailStream(v)),
-    tap(_ => console.log("email sent"))
+    catchError(error => of(Object.assign({error},v)))  
+    )
+}
 
-)
-combinedStream.subscribe();
+
+sensorSegmentStream.subscribe();
