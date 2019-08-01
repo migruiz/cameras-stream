@@ -1,5 +1,8 @@
 const { Observable,of,interval,timer,from,empty} = require('rxjs');
-const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay,timeout,first,filter,merge,timeoutWith} = require('rxjs/operators');
+const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay,timeout,first,filter,merge,timeoutWith,take,toArray,zip} = require('rxjs/operators');
+
+
+
 const { videoFileStream} = require('./ffmpegVideoExtractor.js');
 const { videoSegmentStream } = require('./videoSegmentExtractor');
 const { sensorsReadingStream } = require('./sensorsStreamExtractor');
@@ -19,7 +22,7 @@ global.mtqqLocalPath = process.env.MQTTLOCAL;
 
 const removeFile = path =>  from(util.promisify(fs.unlink)(path)).pipe(switchMapTo(empty()));
 
-const  ffmpegProcessStream = videoFileStream.pipe(repeat(),delay(500),shareReplay(1))
+const  ffmpegProcessStream = videoFileStream.pipe(repeat(),shareReplay(1))
 
 ffmpegProcessStream.subscribe();
 
@@ -50,21 +53,28 @@ const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(
         )
     )
 )  
-const sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(1))
+const sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(4))
 
 const sensorSegmentStream = sensorsReadingStream.pipe(   
     mergeMap(sensor => sharedvideoInfo.pipe(
-        first(segment => segment.startTime < sensor.startVideoAt && sensor.endVideoAt < segment.endTime),
+        //first(segment => segment.startTime < sensor.startVideoAt && sensor.endVideoAt < segment.endTime),
+        first(segment => segment.startTime===3),
         map(segment => ({sensor,segment})),
-        timeout(60 * 1000),
+        timeout(60 * 1000 + 30 * 1000),
         mergeMap(p => extractVideo(p)), 
-        catchError(error => of({sensor,error})),        
+        catchError(error => getErrorData(sensor,error,sharedvideoInfo) ),        
         mergeMap(v=> emailStream(v)),
     )   
     )
 );
 
-    
+function getErrorData(sensor,error,videoStream){    
+    return videoStream.pipe(
+        take(4),
+        toArray(),
+        map(lastInfo => ({sensor,error,lastInfo}))
+    )
+}
 
 
 function extractVideo(v){
