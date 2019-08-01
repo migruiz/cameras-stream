@@ -57,8 +57,7 @@ const sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(4))
 
 const sensorSegmentStream = sensorsReadingStream.pipe(   
     mergeMap(sensor => sharedvideoInfo.pipe(
-        //first(segment => segment.startTime < sensor.startVideoAt && sensor.endVideoAt < segment.endTime),
-        first(segment => segment.startTime===3),
+        first(segment => segment.startTime <= sensor.startVideoAt && sensor.endVideoAt <= segment.endTime),        
         map(segment => ({sensor,segment})),
         timeout(60 * 1000 + 30 * 1000),
         mergeMap(p => extractVideo(p)), 
