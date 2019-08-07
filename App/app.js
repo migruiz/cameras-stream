@@ -51,7 +51,8 @@ const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(
         concatMap(err => from(triggerRestartCamera()).pipe(last(),mapTo(err))),
         mergeMap(_ => videoHandleStreamError)
         )
-    )
+    ),
+    share()
 )  
 const sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(6))
 
