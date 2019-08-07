@@ -75,15 +75,26 @@ const joinFilesStream = (filesToJoinPath,targetFile) => Observable.create(subscr
     }); 
 });
 
+ function toHHMMSS(sec_num) {
+  var hours   = Math.floor(sec_num / 3600);
+  var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+  var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+  if (hours   < 10) {hours   = "0"+hours;}
+  if (minutes < 10) {minutes = "0"+minutes;}
+  if (seconds < 10) {seconds = "0"+seconds;}
+  return hours+':'+minutes+':'+seconds;
+}
+
 const ffmpegextractVideoStream = (startPosition,joinedVideoPath,targetVideoPath) => Observable.create(subscriber => {   
     const params = [
         '-y'
         , '-ss'
-        , '00:00:' + ("0" + startPosition).slice(-2)
+        , toHHMMSS(startPosition)
         , '-i'
         , joinedVideoPath
         , '-t'
-        , '00:00:' + ("0" + VIDEOLENGTHSECS).slice(-2)
+        , toHHMMSS(VIDEOLENGTHSECS)
         , '-vcodec'
         , 'copy'
         , '-acodec'
