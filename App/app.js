@@ -55,6 +55,7 @@ const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(
     share()
 )  
 const sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(6))
+sharedvideoInfo.subscribe(c => console.log(JSON.stringify(c)))
 
 const sensorSegmentStream = sensorsReadingStream.pipe(   
     mergeMap(sensor => sharedvideoInfo.pipe(
