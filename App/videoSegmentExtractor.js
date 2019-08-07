@@ -1,5 +1,5 @@
 const { Observable,throwError,timer,of} = require('rxjs');
-const { mergeMap,filter,map,pairwise,timeout,startWith,concat} = require('rxjs/operators');
+const { mergeMap,filter,map,pairwise,timeout,startWith,concat,bufferCount} = require('rxjs/operators');
 const { probeVideoInfo} = require('./ffprobeVideoDetailsExtractor');
 const path = require('path');
 var Inotify = require('inotify').Inotify;
@@ -29,11 +29,11 @@ const segmentStream = videoFilesStream.pipe(
         }
     )),
     map(videoInfo => Object.assign({endTime:videoInfo.startTime+videoInfo.length}, videoInfo)),
-    pairwise(),
-    map ( ([previous,current]) => ({
-        startTime:previous.startTime,
-        endTime:current.endTime,
-        filesToJoin: [previous.fileName, current.fileName]
+    bufferCount(4,1),
+    map ( ([first,second,third,forth]) => ({
+        startTime:first.startTime,
+        endTime:forth.endTime,
+        filesToJoin: [first.fileName,second.fileName,third.fileName, forth.fileName]
     }))
 )
 
