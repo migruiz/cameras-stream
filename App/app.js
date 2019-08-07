@@ -53,7 +53,7 @@ const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(
         )
     )
 )  
-const sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(4))
+const sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(6))
 
 const sensorSegmentStream = sensorsReadingStream.pipe(   
     mergeMap(sensor => sharedvideoInfo.pipe(
@@ -69,7 +69,7 @@ const sensorSegmentStream = sensorsReadingStream.pipe(
 
 function getErrorData(sensor,error,videoStream){    
     return videoStream.pipe(
-        take(4),
+        take(6),
         toArray(),
         map(lastInfo => ({sensor,error,lastInfo}))
     )
