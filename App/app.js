@@ -43,8 +43,8 @@ const videoHandleStreamErrorFFMPEG = videoSegmentStream.pipe(
         )
     ) 
 )  
-
-const videoHandleStreamError = videoHandleStreamErrorFFMPEG.pipe(    
+var sharedvideoHandleStreamErrorFFMPEG = videoHandleStreamErrorFFMPEG.pipe(share())
+const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(    
     timeout(5 * 60 * 1000),
     catchError(error => of(error).pipe(
         concatMap(err => from(triggerRestartCamera()).pipe(last(),mapTo(err))),
