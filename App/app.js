@@ -43,18 +43,17 @@ const videoHandleStreamErrorFFMPEG = videoSegmentStream.pipe(
         )
     ) 
 )  
-var sharedvideoHandleStreamErrorFFMPEG = videoHandleStreamErrorFFMPEG.pipe(share())
-const videoHandleStreamError = sharedvideoHandleStreamErrorFFMPEG.pipe(    
+
+const videoHandleStreamError = videoHandleStreamErrorFFMPEG.pipe(    
     timeout(5 * 60 * 1000),
     catchError(error => of(error).pipe(
         concatMap(err => from(triggerRestartCamera()).pipe(last(),mapTo(err))),
         mergeMap(_ => videoHandleStreamError)
         )
-    ),
-    share()
+    )
 )  
 const sharedvideoInfo = videoHandleStreamError.pipe(shareReplay(6))
-//sharedvideoInfo.subscribe(c => console.log(JSON.stringify(c)))
+sharedvideoInfo.subscribe(c => console.log(JSON.stringify(c)))
 
 const sensorSegmentStream = sensorsReadingStream.pipe(   
     mergeMap(sensor => sharedvideoInfo.pipe(
