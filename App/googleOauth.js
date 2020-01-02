@@ -45,12 +45,13 @@ const executeRetryingStream = (projects,index,oAuthProcess) =>
 
 oauthStream(projects[index])
   .pipe(  
+    tap(oAuth => console.log(JSON.stringify(oAuth))),
     concatMap(oAuth => oAuthProcess(oAuth)),
     catchError(err => iif(() => index < projects.length - 1 && err.code===403,  defer(() => executeRetryingStream(projects,index+1,oAuthProcess)), throwError(err) ) )
     )
 
 const credesDir = '/secrets/'
-const readDirsStream = 
+const readDirsStream = () =>
 readDirStream(credesDir).pipe(
   concatMap(v => v),
   map(v => ({
@@ -59,8 +60,17 @@ readDirStream(credesDir).pipe(
   })),
   toArray()
 )
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    let j = Math.floor(Math.random() * (i + 1));
+    let temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+  return array;
+}
 
-const resultStream = oAuthProcess => readDirsStream.pipe(concatMap(arr=> executeRetryingStream(arr,0,oAuthProcess)))
+const resultStream = oAuthProcess => readDirsStream().pipe(concatMap(arr=> executeRetryingStream(shuffle(arr),0,oAuthProcess)))
 
 
 
