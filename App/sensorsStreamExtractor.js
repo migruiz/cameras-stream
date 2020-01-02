@@ -25,7 +25,7 @@ const throttledReadingsStreams = sensorsReadingStream.pipe(
 const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===233945),share());
 const outsideMovementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===16340250),share());
 
-const beforeDoorStream = outsideMovementSensor.pipe(
+const movementBeforeOpeningDoorStream = outsideMovementSensor.pipe(
     mergeMap(mr => doorOpenSensor.pipe(
             first(),
             map(dr => Object.assign({movementBefore:true}, dr)),
@@ -34,7 +34,7 @@ const beforeDoorStream = outsideMovementSensor.pipe(
         )
 )
 
-const afterDoorStream = doorOpenSensor.pipe(
+const movementAfterOpeningDoorStream = doorOpenSensor.pipe(
     mergeMap(dr => outsideMovementSensor.pipe(
             first(),
             mapTo(Object.assign({movementAfter:true,finished:true, finishTime:(new Date).getTime()}, dr)),
@@ -43,7 +43,7 @@ const afterDoorStream = doorOpenSensor.pipe(
     )
 )
 
-var doorOpenStream = merge(beforeDoorStream,afterDoorStream).pipe(
+var doorOpenStream = merge(movementBeforeOpeningDoorStream,movementAfterOpeningDoorStream).pipe(
     groupBy(r => r.timestamp, stream => stream),
     mergeMap(stream => stream.pipe( takeWhile(e => !e.finished,true),toArray())),
     map(([befDoor,afterDoor]) =>  Object.assign(befDoor, afterDoor))
