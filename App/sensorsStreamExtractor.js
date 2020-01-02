@@ -64,10 +64,10 @@ function getEventType(e){
         return 'MOVEMENT_BEFORE_AND_AFTER'
     }
     else if (e.movementBefore && !e.movementAfter){
-        return 'EXITING'
+        return 'ENTERING'
     }
     else if (!e.movementBefore && e.movementAfter){
-        return 'ENTERING'
+        return 'EXITING'
     }
 }
 
@@ -78,9 +78,9 @@ function getEndTime(e){
             return e.timestamp + VIDEOSEGMENTLENGTH/2;          
         case 'MOVEMENT_BEFORE_AND_AFTER':
             return e.timestamp + VIDEOSEGMENTLENGTH/2;
-        case 'EXITING':        
+        case 'ENTERING':        
             return e.timestamp + 3*1000;
-        case 'ENTERING':
+        case 'EXITING':
             return e.timestamp + VIDEOSEGMENTLENGTH - 3*1000
         default:
       }
