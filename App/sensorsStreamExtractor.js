@@ -6,8 +6,15 @@ const WAITFORMOVEMENT=15*1000;
 const sensorsReadingStream = new Observable(async subscriber => {  
     console.log('subscribing sensorsReadingStream')
     var mqttCluster=await mqtt.getClusterAsync()   
-    mqttCluster.subscribeData(global.sensorReadingTopic, function(content){
-        subscriber.next(content)
+    mqttCluster.subscribeData('Eurodomest', function(content){
+        if (content.ID==='206aae' || content.ID==='006aae'){
+            subscriber.next({data:'16340250'})
+        }
+    });
+    mqttCluster.subscribeData('EV1527', function(content){
+        if (content.ID==='04f0f4' || content.ID==='0f9551'){
+            subscriber.next({data:'233945'})
+        }
     });
 });
 
@@ -23,9 +30,9 @@ const throttledReadingsStreams = sensorsReadingStream.pipe(
     share()     
 )
 const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===233945),share());
-const movementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===16340250),share());
+const outsideMovementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===16340250),share());
 
-const beforeDoorStream = movementSensor.pipe(
+const movementBeforeOpeningDoorStream = outsideMovementSensor.pipe(
     mergeMap(mr => doorOpenSensor.pipe(
             first(),
             map(dr => Object.assign({movementBefore:true}, dr)),
@@ -34,8 +41,8 @@ const beforeDoorStream = movementSensor.pipe(
         )
 )
 
-const afterDoorStream = doorOpenSensor.pipe(
-    mergeMap(dr => movementSensor.pipe(
+const movementAfterOpeningDoorStream = doorOpenSensor.pipe(
+    mergeMap(dr => outsideMovementSensor.pipe(
             first(),
             mapTo(Object.assign({movementAfter:true,finished:true, finishTime:(new Date).getTime()}, dr)),
             timeoutWith(WAITFORMOVEMENT,of(Object.assign({finished:true, finishTime:(new Date).getTime()}, dr)))
@@ -43,7 +50,7 @@ const afterDoorStream = doorOpenSensor.pipe(
     )
 )
 
-var doorOpenStream = merge(beforeDoorStream,afterDoorStream).pipe(
+var doorOpenStream = merge(movementBeforeOpeningDoorStream,movementAfterOpeningDoorStream).pipe(
     groupBy(r => r.timestamp, stream => stream),
     mergeMap(stream => stream.pipe( takeWhile(e => !e.finished,true),toArray())),
     map(([befDoor,afterDoor]) =>  Object.assign(befDoor, afterDoor))
@@ -64,10 +71,10 @@ function getEventType(e){
         return 'MOVEMENT_BEFORE_AND_AFTER'
     }
     else if (e.movementBefore && !e.movementAfter){
-        return 'EXITING'
+        return 'ENTERING'
     }
     else if (!e.movementBefore && e.movementAfter){
-        return 'ENTERING'
+        return 'EXITING'
     }
 }
 
@@ -78,9 +85,9 @@ function getEndTime(e){
             return e.timestamp + VIDEOSEGMENTLENGTH/2;          
         case 'MOVEMENT_BEFORE_AND_AFTER':
             return e.timestamp + VIDEOSEGMENTLENGTH/2;
-        case 'EXITING':        
+        case 'ENTERING':        
             return e.timestamp + 3*1000;
-        case 'ENTERING':
+        case 'EXITING':
             return e.timestamp + VIDEOSEGMENTLENGTH - 3*1000
         default:
       }
