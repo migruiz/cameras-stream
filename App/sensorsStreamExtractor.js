@@ -6,8 +6,15 @@ const WAITFORMOVEMENT=15*1000;
 const sensorsReadingStream = new Observable(async subscriber => {  
     console.log('subscribing sensorsReadingStream')
     var mqttCluster=await mqtt.getClusterAsync()   
-    mqttCluster.subscribeData(global.sensorReadingTopic, function(content){
-        subscriber.next(content)
+    mqttCluster.subscribeData('Eurodomest', function(content){
+        if (content.ID==='206aae' || content.ID==='006aae'){
+            subscriber.next({data:'16340250'})
+        }
+    });
+    mqttCluster.subscribeData('EV1527', function(content){
+        if (content.ID==='04f0f4' || content.ID==='0f9551'){
+            subscriber.next({data:'233945'})
+        }
     });
 });
 
