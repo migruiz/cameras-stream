@@ -1,8 +1,9 @@
 const { Observable,of,merge,empty } = require('rxjs');
-const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap} = require('rxjs/operators');
+const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,distinct} = require('rxjs/operators');
 var mqtt = require('./mqttCluster.js');
 const VIDEOSEGMENTLENGTH=30*1000;
-const WAITFORMOVEMENT=15*1000;
+const WAITTIMEFORMOVEMENTAFTEROPENINGDOOR=15*1000;
+const WAITTIMEFOROPENINGDOOR = 30*1000
 const sensorsReadingStream = new Observable(async subscriber => {  
     console.log('subscribing sensorsReadingStream')
     var mqttCluster=await mqtt.getClusterAsync()   
@@ -33,19 +34,20 @@ const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===23
 const outsideMovementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===16340250),share());
 
 const movementBeforeOpeningDoorStream = outsideMovementSensor.pipe(
-    mergeMap(mr => doorOpenSensor.pipe(
+    mergeMap(_ => doorOpenSensor.pipe(
             first(),
             map(dr => Object.assign({movementBefore:true}, dr)),
-            timeoutWith(WAITFORMOVEMENT,empty())
+            timeoutWith(WAITTIMEFOROPENINGDOOR,empty())
             )
-        )
+        ),
+        distinct(dr =>dr.timestamp)
 )
 
 const movementAfterOpeningDoorStream = doorOpenSensor.pipe(
     mergeMap(dr => outsideMovementSensor.pipe(
             first(),
             mapTo(Object.assign({movementAfter:true,finished:true, finishTime:(new Date).getTime()}, dr)),
-            timeoutWith(WAITFORMOVEMENT,of(Object.assign({finished:true, finishTime:(new Date).getTime()}, dr)))
+            timeoutWith(WAITTIMEFORMOVEMENTAFTEROPENINGDOOR,of(Object.assign({finished:true, finishTime:(new Date).getTime()}, dr)))
         )
     )
 )
