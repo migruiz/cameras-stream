@@ -61,19 +61,11 @@ const sensorSegmentStream = sensorsReadingStream.pipe(
         map(segment => ({sensor,segment})),
         timeout(3 * 60 * 1000),
         mergeMap(p => extractVideo(p)), 
-        catchError(error => getErrorData(sensor,error,sharedvideoInfo) ),        
+        catchError(error => of({sensor,error}) ),        
         mergeMap(v=> emailStream(v)),
     )   
     )
 );
-
-function getErrorData(sensor,error,videoStream){    
-    return videoStream.pipe(
-        take(8),
-        toArray(),
-        map(lastInfo => ({sensor,error,lastInfo}))
-    )
-}
 
 
 function extractVideo(v){
