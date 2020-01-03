@@ -40,16 +40,14 @@ const oauthStream = (authInfo) => oAuthGoogle(authInfo.credential).pipe(
 
 
 
-const executeRetryingStream = (projects,index,oAuthProcess) =>
-
-
-oauthStream(projects[index])
-  .pipe(  
-    tap(oAuth => console.log(JSON.stringify(oAuth))),
-    concatMap(oAuth => oAuthProcess(oAuth)),
-    catchError(err => iif(() => index < projects.length - 1 && err.code===403,  defer(() => executeRetryingStream(projects,index+1,oAuthProcess)), throwError(err) ) )
-    )
-
+const executeRetryingStream = (projects,index,oAuthProcess) => {
+ console.log(JSON.stringify(projects[index]))
+  return oauthStream(projects[index])
+    .pipe(  
+      concatMap(oAuth => oAuthProcess(oAuth)),
+      catchError(err => iif(() => index < projects.length - 1 && err.code===403,  defer(() => executeRetryingStream(projects,index+1,oAuthProcess)), throwError(err) ) )
+      )
+}
 const credesDir = '/secrets/'
 const readDirsStream = () =>
 readDirStream(credesDir).pipe(
