@@ -21,6 +21,6 @@ const resultStream = videoPath =>   readDirStream(videoPath).pipe(
     concatMap(e => removeFile(videosFolder + e.file))
 )
 
-const clearVideoStream = interval(60  * 60 * 1000).pipe(mergeMap(_ => resultStream(videosFolder)))
+const clearVideoStream = interval(30  * 60 * 1000).pipe(mergeMap(_ => resultStream(videosFolder)))
 
 exports.clearVideoStream = clearVideoStream
