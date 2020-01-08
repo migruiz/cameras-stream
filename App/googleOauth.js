@@ -41,6 +41,7 @@ const oauthStream = (authInfo) => oAuthGoogle(authInfo.credential).pipe(
 
 
 const executeRetryingStream = (projects,index,oAuthProcess) => {
+ console.log(`executeRetryingStream index ${index}`)
  console.log(JSON.stringify(projects[index]))
   return oauthStream(projects[index])
     .pipe(  
