@@ -13,7 +13,7 @@ const sensorsReadingStream = new Observable(async subscriber => {
         }
     });
     mqttCluster.subscribeData('EV1527', function(content){
-        if (content.ID==='04f0f4' || content.ID==='0f9551'){
+        if (content.ID==='04f0f4'){
             subscriber.next({data:'233945'})
         }
     });
