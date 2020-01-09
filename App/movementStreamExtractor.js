@@ -1,7 +1,6 @@
 const { Observable,of,merge,empty,interval } = require('rxjs');
 const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,timeout,shareReplay, toArray,takeWhile,delay,tap,distinct,bufferWhen} = require('rxjs/operators');
 var mqtt = require('./mqttCluster.js');
-global.mtqqLocalPath ="mqtt://piscos.tk"
 const movementSensorsReadingStream = new Observable(async subscriber => {  
     var mqttCluster=await mqtt.getClusterAsync()   
     mqttCluster.subscribeData('Eurodomest', function(content){
