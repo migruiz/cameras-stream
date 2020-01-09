@@ -12,7 +12,10 @@ const movementSensorsReadingStream = new Observable(async subscriber => {
 
 
 
-var sharedStream = movementSensorsReadingStream.pipe(share())
+var sharedStream = movementSensorsReadingStream.pipe(
+    map(_ => Date())
+    ,share()
+    )
 
 sharedStream.pipe(
     bufferWhen(
@@ -22,6 +25,7 @@ sharedStream.pipe(
         )
     )
     ,filter( e =>e.length>0)
+    ,map(a=> ({first:a[0],last:a[a.length-1]}))
 
 )
 
