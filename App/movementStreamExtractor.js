@@ -50,6 +50,7 @@ const segmentStream = videoFilesStream.pipe(
     map(videoInfo => Object.assign({endTime:videoInfo.startTime+videoInfo.length}, videoInfo)),
     shareReplay(10)
 )
+segmentStream.subscribe()
 
 var movementSharedStream = movementSensorsReadingStream.pipe(
     map(_ => (new Date).getTime())
