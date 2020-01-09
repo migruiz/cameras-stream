@@ -56,7 +56,7 @@ var movementSharedStream = movementSensorsReadingStream.pipe(
     ,share()
     )
 
-    movementSharedStream.pipe(
+ var streamToListen =   movementSharedStream.pipe(
     bufferWhen(
         () => movementSharedStream.pipe(
             timeoutWith(1000*5,empty())
@@ -76,7 +76,7 @@ var movementSharedStream = movementSensorsReadingStream.pipe(
     )
 )
 
-exports.movementStream = movementSharedStream
+exports.movementStream = streamToListen
 
 
 
