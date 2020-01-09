@@ -10,6 +10,7 @@ const { extractVideoStream } = require('./sensorVideoExtractor');
 const { emailStream } = require('./emailSender');
 const { uploadVideoStream } = require('./uploadYoutube');
 const { clearVideoStream } = require('./clearVideosStream');
+const { movementStream } = require('./movementStreamExtractor');
 var mqtt = require('./mqttCluster.js');
 const fs = require('fs');
 const util = require('util');
@@ -79,3 +80,4 @@ function extractVideo(v){
 
 
 sensorSegmentStream.subscribe();
+movementStream.subscribe( d => console.log(JSON.stringify(d)))
