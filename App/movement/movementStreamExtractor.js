@@ -65,12 +65,13 @@ var movementSharedStream = movementSensorsReadingStream.pipe(
     )
     ,filter( e =>e.length>0)
     ,map(a=> ({startedAt:a[0],endedAt:a[a.length-1]}))
+    ,map(a => Object.assign({duration:a.endedAt - a.startedAt},a))
     ,mergeMap( ev =>         
         segmentStream.pipe(
             filter(s=>s.endTime > ev.startedAt)
             ,takeWhile(s=> s.startTime < ev.endedAt )
             ,toArray()
-            ,map(a => Object.assign({videos:a},ev))
+            ,map(a => Object.assign({videos:a, videosStartTime:a[0].startTime, videosEndTime:a[a.length-1].endTime},ev))
         )
     )
 )
