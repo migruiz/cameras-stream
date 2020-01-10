@@ -84,4 +84,4 @@ sensorSegmentStream.subscribe();
 movementStream.pipe(
     mergeMap(e => extractMovementVideoStream(e))
 )
-movementStream.subscribe( d => console.log(JSON.stringify(d)))
+.subscribe( d => console.log(JSON.stringify(d)))
