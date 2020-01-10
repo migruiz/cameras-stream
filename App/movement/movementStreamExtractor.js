@@ -1,5 +1,5 @@
 const { Observable,of,merge,empty,interval } = require('rxjs');
-const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,timeout,shareReplay, toArray,takeWhile,delay,tap,distinct,bufferWhen} = require('rxjs/operators');
+const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,timeout,shareReplay,ignoreElements,debounceTime, toArray,takeWhile,delay,tap,distinct,bufferWhen} = require('rxjs/operators');
 var mqtt = require('../mqttCluster.js');
 const movementSensorsReadingStream = new Observable(async subscriber => {  
     var mqttCluster=await mqtt.getClusterAsync()   
@@ -58,12 +58,8 @@ var movementSharedStream = movementSensorsReadingStream.pipe(
 
  var streamToListen =   movementSharedStream.pipe(
     bufferWhen(
-        () => movementSharedStream.pipe(
-            timeoutWith(1000*5,empty())
-            ,toArray()
-        )
+        () => movementSharedStream.pipe(debounceTime(5000))
     )
-    ,filter( e =>e.length>0)
     ,map(a=> ({startedAt:a[0],endedAt:a[a.length-1]}))
     ,map(a => Object.assign({duration:a.endedAt - a.startedAt},a))
     ,mergeMap( ev =>         
