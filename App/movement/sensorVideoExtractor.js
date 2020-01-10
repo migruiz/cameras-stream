@@ -4,7 +4,7 @@ const { Observable,of,from,empty} = require('rxjs');
 const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,endWith,switchMapTo} = require('rxjs/operators');
 const fs = require('fs');
 const util = require('util');
-const videosFolder = '/videos/'
+const videosFolder = '/movementVideos/'
 const videosFolderTemp = `${videosFolder}movementTemp/`
 const ffmpegFolder = '/ffmpeg/';
 

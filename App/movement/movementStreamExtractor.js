@@ -60,7 +60,7 @@ var movementSharedStream = movementSensorsReadingStream.pipe(
     bufferWhen(
         () => movementSharedStream.pipe(debounceTime(5000))
     )
-    ,map(a=> ({startedAt:a[0]-5000,endedAt:a[a.length-1]+5000}))
+    ,map(a=> ({startedAt:a[0]-2000,endedAt:a[a.length-1]+3000}))
     ,map(a => Object.assign({duration:a.endedAt - a.startedAt},a))
     ,mergeMap( ev =>         
         segmentStream.pipe(
