@@ -59,3 +59,5 @@ typings/
 
 # next.js build output
 .next
+/App/credentialsCam.json
+/App/tokenCam.json
