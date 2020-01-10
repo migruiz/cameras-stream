@@ -82,6 +82,9 @@ function extractVideo(v){
 
 sensorSegmentStream.subscribe();
 movementStream.pipe(
-    mergeMap(e => extractMovementVideoStream(e))
+    mergeMap(e => extractMovementVideoStream(e).pipe(
+        map(extractedVideoPath => Object.assign({extractedVideoPath},e))
+        )
+    )
 )
 .subscribe( d => console.log(JSON.stringify(d)))
