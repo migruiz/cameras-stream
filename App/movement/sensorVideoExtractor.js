@@ -123,4 +123,4 @@ const ffmpegextractVideoStream = (startPosition,durationSecs,joinedVideoPath,tar
 });
 
 
-exports.extractVideoStream = extractVideoStream
+exports.extractMovementVideoStream = extractVideoStream
