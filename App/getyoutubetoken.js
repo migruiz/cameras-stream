@@ -5,7 +5,7 @@ var OAuth2 = google.auth.OAuth2;
 
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/youtube-nodejs-quickstart.json
-var SCOPES = ["https://www.googleapis.com/auth/youtube.upload", "https://www.googleapis.com/auth/gmail.send", "https://www.googleapis.com/auth/youtube"];
+var SCOPES = ["https://www.googleapis.com/auth/youtube.upload", "https://www.googleapis.com/auth/drive","https://www.googleapis.com/auth/gmail.send", "https://www.googleapis.com/auth/youtube"];
 const TOKEN_PATH = 'tokenCam.json'
 console.log(TOKEN_PATH);
 
