@@ -1,6 +1,6 @@
 const { Observable,of,merge,empty,interval } = require('rxjs');
 const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,timeout,shareReplay, toArray,takeWhile,delay,tap,distinct,bufferWhen} = require('rxjs/operators');
-var mqtt = require('./mqttCluster.js');
+var mqtt = require('../mqttCluster.js');
 const movementSensorsReadingStream = new Observable(async subscriber => {  
     var mqttCluster=await mqtt.getClusterAsync()   
     mqttCluster.subscribeData('Eurodomest', function(content){
@@ -17,7 +17,7 @@ const movementSensorsReadingStream = new Observable(async subscriber => {
 
 
 
-const { probeVideoInfo} = require('./ffprobeVideoDetailsExtractor');
+const { probeVideoInfo} = require('../ffprobeVideoDetailsExtractor');
 const path = require('path');
 var Inotify = require('inotify').Inotify;
 var inotify = new Inotify();
