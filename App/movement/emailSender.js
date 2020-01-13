@@ -3,7 +3,7 @@ const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,t
 const fs = require('fs');
 const util = require('util');
 const {google} = require('googleapis');
-const { oauthStream } = require('./googleOauth');
+const { oauthStream } = require('../googleOauth');
 const dateFormat = require('dateformat');
 
 const sendEmailStream =(auth,base64EncodedEmail) => from(google.gmail('v1').users.messages.send({
