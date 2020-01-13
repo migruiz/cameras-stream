@@ -10,7 +10,7 @@ const { emailStream } = require('./emailSender')
 const resultStream  = movementStream.pipe(
     concatMap(v=> extractMovementVideoStream(v).pipe(map(extractedVideoPath => Object.assign({extractedVideoPath},v)))), 
     concatMap(v=> uploadVideoStream(v).pipe(map(youtubeURL => Object.assign({youtubeURL},v)))),
-    concatMap(v=> emailStream(v).pipe(map(gmailData => Object.assign({gmailData},v))))    
+    concatMap(v=> emailStream(v).pipe(map(_ => v)))    
     )
 
 exports.movementStream = resultStream
