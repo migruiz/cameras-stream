@@ -10,8 +10,10 @@ const { extractVideoStream } = require('./sensorVideoExtractor');
 const { emailStream } = require('./emailSender');
 const { uploadVideoStream } = require('./uploadYoutube');
 const { clearVideoStream } = require('./clearVideosStream');
-const { movementStream } = require('./movement/movementStreamExtractor');
-const { extractMovementVideoStream  } = require('./movement/sensorVideoExtractor');
+const { movementStream  } = require('./movement/movementStream');
+
+
+
 var mqtt = require('./mqttCluster.js');
 const fs = require('fs');
 const util = require('util');
@@ -81,10 +83,4 @@ function extractVideo(v){
 
 
 sensorSegmentStream.subscribe();
-movementStream.pipe(
-    mergeMap(e => extractMovementVideoStream(e).pipe(
-        map(extractedVideoPath => Object.assign({extractedVideoPath},e))
-        )
-    )
-)
-.subscribe( d => console.log(JSON.stringify(d)))
+movementStream.subscribe( d => console.log(JSON.stringify(d)))
