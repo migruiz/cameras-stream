@@ -58,14 +58,16 @@ var movementSharedStream = movementSensorsReadingStream.pipe(
 
  var streamToListen =   movementSharedStream.pipe(
     bufferWhen(
-        () => movementSharedStream.pipe(debounceTime(7000))
+        () => movementSharedStream.pipe(debounceTime(10000))
     )
-    ,map(a=> ({startedAt:a[0]-2000,endedAt:a[a.length-1]+3000}))
+    ,map(a=> ({startedAt:a[0],endedAt:a[a.length-1]}))    
     ,map(a => Object.assign({duration:a.endedAt - a.startedAt},a))
+    ,filter(a => a.duration>3000)
+    ,map(a => Object.assign({startVideoAt:a.startedAt - 3000, endVideoAt:a.endedAt + 3000},a))
     ,mergeMap( ev =>         
         segmentStream.pipe(
-            filter(s=>s.endTime > ev.startedAt)
-            ,takeWhile(s=> s.startTime < ev.endedAt )
+            filter(s=>s.endVideoAt > ev.startedAt)
+            ,takeWhile(s=> s.startVideoAt < ev.endedAt )
             ,toArray()
             ,map(a => Object.assign({videos:a, videosStartTime:a[0].startTime, videosEndTime:a[a.length-1].endTime},ev))
         )
