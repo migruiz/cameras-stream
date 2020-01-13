@@ -27,7 +27,7 @@ function getEmailParameters(eventInfo) {
       fromAddress: 'entrancecamera123@gmail.com',
       //to: 'mig.ruiz@gmail.com',
       to: 'mig.ruiz@gmail.com',
-      subject:getSubject(eventInfo.sensor),
+      subject:getSubject(eventInfo),
       body: htmlBody
     };
     return emailParams;
