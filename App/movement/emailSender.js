@@ -26,7 +26,7 @@ function getEmailParameters(eventInfo) {
       fromName: 'HOME',
       fromAddress: 'entrancecamera123@gmail.com',
       //to: 'mig.ruiz@gmail.com',
-      to: 'mig.ruiz@gmail.com',
+      to: 'mig.ruiz@gmail.com,soniacarolina.blanco@gmail.com',
       subject:getSubject(eventInfo),
       body: htmlBody
     };
@@ -35,7 +35,7 @@ function getEmailParameters(eventInfo) {
 
   function getSubject(eventInfo){
     const date = new Date(eventInfo.timestamp);
-    return `${dateFormat(date, "h:MM TT")}?=`;     
+    return `Entrance Camera Movement: ${dateFormat(date, "h:MM TT")}`;     
   }
 
   function getBase64Email(emailParams){

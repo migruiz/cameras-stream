@@ -58,7 +58,7 @@ var movementSharedStream = movementSensorsReadingStream.pipe(
 
  var streamToListen =   movementSharedStream.pipe(
     bufferWhen(
-        () => movementSharedStream.pipe(debounceTime(10000))
+        () => movementSharedStream.pipe(debounceTime(20000))
     )
     ,map(a=> ({startedAt:a[0],endedAt:a[a.length-1]}))    
     ,map(a => Object.assign({duration:a.endedAt - a.startedAt},a))

@@ -26,7 +26,7 @@ const uploadVideoStream =(auth,info) => from(
           notifySubscribers: false,
           requestBody: {
             snippet: {
-              title: 'Movement',
+              title: 'Entrance',
               description: JSON.stringify(info),
             },
             status: {
