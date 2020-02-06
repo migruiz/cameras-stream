@@ -83,4 +83,3 @@ function extractVideo(v){
 
 
 sensorSegmentStream.subscribe();
-movementStream.subscribe( d => console.log(JSON.stringify(d)))
