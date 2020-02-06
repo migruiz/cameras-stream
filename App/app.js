@@ -1,4 +1,6 @@
 const { Observable,of,interval,timer,from,empty} = require('rxjs');
+
+global.mtqqLocalPath = process.env.MQTTLOCAL;
 const { map,buffer,withLatestFrom,tap,share,last,expand,catchError,mergeMap,delay,mapTo,concatMap,switchMapTo,endWith,repeat,shareReplay,timeout,first,filter,merge,timeoutWith,take,toArray,zip} = require('rxjs/operators');
 
 
@@ -22,7 +24,6 @@ const util = require('util');
 
 global.sensorReadingTopic = 'sensorReadingTopic';
 global.restartCameraTopic="restartCameraTopic"
-global.mtqqLocalPath = process.env.MQTTLOCAL;
 
 const removeFile = path =>  from(util.promisify(fs.unlink)(path)).pipe(switchMapTo(empty()));
 
