@@ -1,37 +1,47 @@
 const { Observable,of,merge,empty } = require('rxjs');
-const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,distinct} = require('rxjs/operators');
+const { groupBy,mergeMap,throttleTime,map,reduce, share,shareReplay, filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,distinct} = require('rxjs/operators');
 var mqtt = require('./mqttCluster.js');
 const VIDEOSEGMENTLENGTH=30*1000;
 const WAITTIMEFORMOVEMENTAFTEROPENINGDOOR=15*1000;
 const WAITTIMEFOROPENINGDOOR = 30*1000
+
+global.mtqqLocalPath = 'mqtt://piscos.tk'
+
 const sensorsReadingStream = new Observable(async subscriber => {  
     console.log('subscribing sensorsReadingStream')
     var mqttCluster=await mqtt.getClusterAsync()   
-    mqttCluster.subscribeData('Eurodomest', function(content){
-        if (content.ID==='206aae' || content.ID==='006aae'){
-            subscriber.next({data:'16340250'})
+    mqttCluster.subscribeData('test', function(content){
+        if (content.ID==='door'){
+            subscriber.next(content)
         }
     });
-    mqttCluster.subscribeData('EV1527', function(content){
-        if (content.ID==='04f0f4'){
-            subscriber.next({data:'233945'})
+    mqttCluster.subscribeData('test', function(content){
+        if (content.ID==='move'){
+            subscriber.next(content)
         }
     });
 });
 
+const sharedStream = sensorsReadingStream.pipe(share())
 
-const throttledReadingsStreams = sensorsReadingStream.pipe(
-    map(r => ({
-        sensorId: parseInt(r.data),
-        timestamp: (new Date).getTime(),                
-    })),
-    groupBy(r => r.sensorId, r => r),    
-    mergeMap(s => s.pipe(throttleTime(3000))),    
-    tap(v => console.log(v)),   
-    share()     
+
+const doorOpenSensor = sharedStream.pipe(filter(r => r.ID==='door'),share());
+const outsideMovementSensor = sharedStream.pipe(filter(r => r.ID==='move'),share());
+const lastEmitions = outsideMovementSensor.pipe(shareReplay(undefined,10000,undefined))
+lastEmitions.subscribe()
+
+
+const bef = doorOpenSensor.pipe(
+    
+    mergeMap(d => lastEmitions.pipe(        
+        timeoutWith(0,empty()),        
+        reduce((acc, _ ) => acc + 1, 0),
+        map(n => Object.assign({count:n}, d))
+        )
+    )
 )
-const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===233945),share());
-const outsideMovementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===16340250),share());
+bef.subscribe(c=> console.log(c))
+return
 
 const movementBeforeOpeningDoorStream = outsideMovementSensor.pipe(
     mergeMap(_ => doorOpenSensor.pipe(
