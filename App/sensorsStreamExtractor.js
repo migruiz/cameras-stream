@@ -1,81 +1,89 @@
-const { Observable,of,merge,empty } = require('rxjs');
-const { groupBy,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,distinct} = require('rxjs/operators');
+const { Observable,of,merge,empty,timer } = require('rxjs');
+const { groupBy,mergeMap,throttleTime,map,reduce,takeUntil, share,shareReplay, filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,distinct} = require('rxjs/operators');
 var mqtt = require('./mqttCluster.js');
 const VIDEOSEGMENTLENGTH=30*1000;
-const WAITTIMEFORMOVEMENTAFTEROPENINGDOOR=15*1000;
-const WAITTIMEFOROPENINGDOOR = 30*1000
+const ESPDELAY = 3000
+const HALFWINDOW = 20000
+
 const sensorsReadingStream = new Observable(async subscriber => {  
     console.log('subscribing sensorsReadingStream')
-    var mqttCluster=await mqtt.getClusterAsync()   
+    const mqttCluster=await mqtt.getClusterAsync()   
     mqttCluster.subscribeData('Eurodomest', function(content){
         if (content.ID==='206aae' || content.ID==='006aae'){
             subscriber.next({data:'16340250'})
         }
     });
-    mqttCluster.subscribeData('EV1527', function(content){
-        if (content.ID==='04f0f4'){
-            subscriber.next({data:'233945'})
-        }
+    mqttCluster.subscribeData('stat/tasmota/RESULT', function(content){
+        subscriber.next({data:'233945'})
     });
 });
 
 
-const throttledReadingsStreams = sensorsReadingStream.pipe(
-    map(r => ({
-        sensorId: parseInt(r.data),
-        timestamp: (new Date).getTime(),                
-    })),
-    groupBy(r => r.sensorId, r => r),    
-    mergeMap(s => s.pipe(throttleTime(3000))),    
-    tap(v => console.log(v)),   
-    share()     
-)
-const doorOpenSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===233945),share());
-const outsideMovementSensor = throttledReadingsStreams.pipe(filter(r => r.sensorId===16340250),share());
 
-const movementBeforeOpeningDoorStream = outsideMovementSensor.pipe(
-    mergeMap(_ => doorOpenSensor.pipe(
-            first(),
-            map(dr => Object.assign({movementBefore:true}, dr)),
-            timeoutWith(WAITTIMEFOROPENINGDOOR,empty())
-            )
-        ),
-        distinct(dr =>dr.timestamp)
-)
+const sharedStream = sensorsReadingStream.pipe(
+        map(r => ({
+                sensorId: parseInt(r.data),
+                timestamp: (new Date).getTime(),                
+            })),
+        share()
+    )
 
-const movementAfterOpeningDoorStream = doorOpenSensor.pipe(
-    mergeMap(dr => outsideMovementSensor.pipe(
-            first(),
-            mapTo(Object.assign({movementAfter:true,finished:true, finishTime:(new Date).getTime()}, dr)),
-            timeoutWith(WAITTIMEFORMOVEMENTAFTEROPENINGDOOR,of(Object.assign({finished:true, finishTime:(new Date).getTime()}, dr)))
+
+const doorOpenSensor = sharedStream.pipe(
+    filter(r => r.sensorId===233945),
+    throttleTime(5000),
+    map(r=>({sensorId:r.sensorId, timestamp:r.timestamp - ESPDELAY})),
+    share()
+    );
+const outsideMovementSensor = sharedStream.pipe(filter(r => r.sensorId===16340250),share());
+
+const movementBeforeDoorEvent = outsideMovementSensor.pipe(shareReplay(undefined,HALFWINDOW + ESPDELAY,undefined))
+const movementAfterDoorEvent = outsideMovementSensor.pipe(shareReplay(undefined,ESPDELAY,undefined))
+movementBeforeDoorEvent.subscribe()
+movementAfterDoorEvent.subscribe()
+
+
+const beforeDoorEventStream = doorOpenSensor.pipe(
+    mergeMap(d => movementBeforeDoorEvent.pipe(        
+        timeoutWith(0,empty()),   
+        takeWhile(s=> s.timestamp < d.timestamp),
+        reduce((acc, _ ) => acc + 1, 0),
+        map(n => Object.assign({countBefore:n,finished:false}, d))
+        )
+    )
+)
+const afterDoorEventStream = doorOpenSensor.pipe(
+    
+    mergeMap(d => movementAfterDoorEvent.pipe(     
+        takeUntil(timer(HALFWINDOW - ESPDELAY)),        
+        reduce((acc, _ ) => acc + 1, 0),
+        map(n => Object.assign({countAfter:n,finished:true}, d))
         )
     )
 )
 
-var doorOpenStream = merge(movementBeforeOpeningDoorStream,movementAfterOpeningDoorStream).pipe(
-    groupBy(r => r.timestamp, stream => stream),
+const doorOpenStream = merge(beforeDoorEventStream,afterDoorEventStream).pipe(
+    groupBy(r => r.timestamp, r => r),
     mergeMap(stream => stream.pipe( takeWhile(e => !e.finished,true),toArray())),
-    map(([befDoor,afterDoor]) =>  Object.assign(befDoor, afterDoor))
-)
-
-doorOpenStream = doorOpenStream.pipe(
+    map(([befDoor,afterDoor]) =>  Object.assign(befDoor, afterDoor)),
     map( e => Object.assign({type:getEventType(e)}, e)),
     map( e => Object.assign({endVideoAt:getEndTime(e)}, e)),
     map( e => Object.assign({startVideoAt: e.endVideoAt - VIDEOSEGMENTLENGTH}, e)),
 )
 
 
+
 function getEventType(e){
-    if (!e.movementBefore && !e.movementAfter){
+    if (e.countBefore===0 && e.countAfter===0){
         return 'NO_MOVEMENT'
     }
-    else if (e.movementBefore && e.movementAfter){
+    else if (e.countAfter === e.countBefore){
         return 'MOVEMENT_BEFORE_AND_AFTER'
     }
-    else if (e.movementBefore && !e.movementAfter){
+    else if (e.countBefore > e.countAfter){
         return 'ENTERING'
     }
-    else if (!e.movementBefore && e.movementAfter){
+    else if (e.countBefore < e.countAfter){
         return 'EXITING'
     }
 }
