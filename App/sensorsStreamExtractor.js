@@ -2,7 +2,7 @@ const { Observable,of,merge,empty,timer } = require('rxjs');
 const { groupBy,mergeMap,throttleTime,map,reduce,takeUntil, share,shareReplay, filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,distinct} = require('rxjs/operators');
 var mqtt = require('./mqttCluster.js');
 const VIDEOSEGMENTLENGTH=30*1000;
-const ESPDELAY = 3000
+const ESPDELAY = 4500
 const HALFWINDOW = 20000
 
 const sensorsReadingStream = new Observable(async subscriber => {  
