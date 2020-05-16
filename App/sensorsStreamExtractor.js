@@ -2,19 +2,20 @@ const { Observable,of,merge,empty,timer } = require('rxjs');
 const { groupBy,mergeMap,throttleTime,map,reduce,takeUntil, share,shareReplay, filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,distinct} = require('rxjs/operators');
 var mqtt = require('./mqttCluster.js');
 const VIDEOSEGMENTLENGTH=30*1000;
-const ESPDELAY = 4500
 const HALFWINDOW = 20000
 
 const sensorsReadingStream = new Observable(async subscriber => {  
     console.log('subscribing sensorsReadingStream')
     const mqttCluster=await mqtt.getClusterAsync()   
-    mqttCluster.subscribeData('Eurodomest', function(content){
-        if (content.ID==='206aae' || content.ID==='006aae'){
+    mqttCluster.subscribeData('EV1527', function(content){
+        if (content.ID==='0ce052'){
             subscriber.next({data:'16340250'})
         }
     });
-    mqttCluster.subscribeData('stat/tasmota/RESULT', function(content){
-        subscriber.next({data:'233945'})
+    mqttCluster.subscribeData('EV1527', function(content){
+        if (content.ID==='00391d'){
+            subscriber.next({data:'233945'})
+        }
     });
 });
 
@@ -32,13 +33,13 @@ const sharedStream = sensorsReadingStream.pipe(
 const doorOpenSensor = sharedStream.pipe(
     filter(r => r.sensorId===233945),
     throttleTime(5000),
-    map(r=>({sensorId:r.sensorId, timestamp:r.timestamp - ESPDELAY})),
+    map(r=>({sensorId:r.sensorId, timestamp:r.timestamp})),
     share()
     );
 const outsideMovementSensor = sharedStream.pipe(filter(r => r.sensorId===16340250),share());
 
-const movementBeforeDoorEvent = outsideMovementSensor.pipe(shareReplay(undefined,HALFWINDOW + ESPDELAY,undefined))
-const movementAfterDoorEvent = outsideMovementSensor.pipe(shareReplay(undefined,ESPDELAY,undefined))
+const movementBeforeDoorEvent = outsideMovementSensor.pipe(shareReplay(undefined,HALFWINDOW,undefined))
+const movementAfterDoorEvent = outsideMovementSensor
 movementBeforeDoorEvent.subscribe()
 movementAfterDoorEvent.subscribe()
 
@@ -55,7 +56,7 @@ const beforeDoorEventStream = doorOpenSensor.pipe(
 const afterDoorEventStream = doorOpenSensor.pipe(
     
     mergeMap(d => movementAfterDoorEvent.pipe(     
-        takeUntil(timer(HALFWINDOW - ESPDELAY)),        
+        takeUntil(timer(HALFWINDOW)),        
         reduce((acc, _ ) => acc + 1, 0),
         map(n => Object.assign({countAfter:n,finished:true}, d))
         )
