@@ -34,7 +34,8 @@ function getEmailParameters(eventInfo) {
   }
 
   function getSubject(eventInfo){
-    const date = new Date(eventInfo.timestamp);
+    var date = new Date(0);
+    date.setUTCMilliseconds(eventInfo.timestamp);
     switch(eventInfo.type) {
         case 'NO_MOVEMENT':
             return `=?utf-8?Q?DOOR_OPEN_=E2=9D=8C_NO_MOVEMENT_at_${dateFormat(date, "h:MM TT")}?=`;         
