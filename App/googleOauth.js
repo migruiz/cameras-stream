@@ -39,25 +39,29 @@ const oauthStream = (authInfo) => oAuthGoogle(authInfo.credential).pipe(
 )
 
 
-const handleErrorStream = (err,projects,index,oAuthProcess) => {
+const handleErrorStream = (err,projects,index,oAuthProcess,tries) => {
+  console.log(JSON.stringify(err))
+  if (tries>20){
+    return throwError(err)
+  }
   if (index < projects.length - 1 && err.code===403){
-    return executeRetryingStream(projects,index+1,oAuthProcess)
+    return executeRetryingStream(projects,index+1,oAuthProcess, tries + 1)
   }
   else if (index < projects.length - 1 && err.code!==403){
-    return executeRetryingStream(projects,index,oAuthProcess)
+    return executeRetryingStream(projects,index,oAuthProcess, tries + 1)
   }
   else{
     return throwError(err)
   }
 }
 
-const executeRetryingStream = (projects,index,oAuthProcess) => {
+const executeRetryingStream = (projects,index,oAuthProcess,tries) => {
  console.log(`executeRetryingStream index ${index}`)
  console.log(JSON.stringify(projects[index]))
   return oauthStream(projects[index])
     .pipe(  
       concatMap(oAuth => oAuthProcess(oAuth)),
-      catchError(err => handleErrorStream(err, projects, index, oAuthProcess) )
+      catchError(err => handleErrorStream(err, projects, index, oAuthProcess, tries ) )
       )
 }
 const credesDir = '/secrets/'
@@ -80,7 +84,7 @@ function shuffle(array) {
   return array;
 }
 
-const resultStream = oAuthProcess => readDirsStream().pipe(concatMap(arr=> executeRetryingStream(shuffle(arr),0,oAuthProcess)))
+const resultStream = oAuthProcess => readDirsStream().pipe(concatMap(arr=> executeRetryingStream(shuffle(arr),0,oAuthProcess,0)))
 
 
 
