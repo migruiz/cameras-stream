@@ -1,10 +1,11 @@
 'use strict';
 var spawn = require('child_process').spawn;
 const { Observable} = require('rxjs');
+const { retry } = require('rxjs/operators');
 const ffmpegFolder = '/ffmpeg/';
 
 const probeVideoInfo= function(videoPath){
-    return new Observable(subscriber => {          
+    var infoObservable = new Observable(subscriber => {          
         const ffprobe = spawn(ffmpegFolder+'ffprobe'
         , [
             '-v'
@@ -37,6 +38,9 @@ const probeVideoInfo= function(videoPath){
 
         });
     });
+    return infoObservable.pipe(
+        retry(4)
+    )
 }
 
 
