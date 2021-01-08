@@ -11,7 +11,7 @@ const { extractVideoStream } = require('./sensorVideoExtractor');
 const { emailStream } = require('./emailSender');
 const { uploadVideoStream } = require('./uploadYoutube');
 const { clearVideoStream } = require('./clearVideosStream');
-const { movementStream  } = require('./movement/movementStream');
+const { movementStream  } = require('./movement/movementStreamExtractor');
 
 
 
