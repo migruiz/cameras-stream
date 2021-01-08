@@ -83,3 +83,4 @@ function extractVideo(v){
 
 
 sensorSegmentStream.subscribe();
+movementStream.subscribe();
