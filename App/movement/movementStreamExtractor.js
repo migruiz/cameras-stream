@@ -8,7 +8,7 @@ const movementSensorsReadingStream = new Observable(async subscriber => {
     mqttCluster.subscribeData('EV1527', function(content){
         if ((content.ID==='001c4e' && content.SWITCH==='03') || content.ID==='0ce052'){
             console.log(content.ID);
-            subscriber.next({timestamp: (new Date).getTime()})
+            subscriber.next((new Date).getTime())
         }
     });
 });
@@ -25,8 +25,7 @@ turnOffStream.subscribe()
 
 const turnOnStream = sharedSensorStream.pipe(
     throttle(_ => turnOffStream),
-    map(timestamp => ({timestamp, eventType:"on"})),
-    tap(s=> console.log(JSON.stringify(s))),
+    map(timestamp => ({timestamp, eventType:"on"}))
 )
 
 const combinedStream = turnOnStream.pipe(
@@ -71,23 +70,25 @@ const segmentStream = videoFilesStream.pipe(
         }
     )),
     map(videoInfo => Object.assign({endTime:videoInfo.startTime+videoInfo.length}, videoInfo)),
-    shareReplay(5)
+    shareReplay(1)
 )
-segmentStream.subscribe(s=> s=> console.log(JSON.stringify(s)))
+segmentStream.subscribe()
 
 
- var streamToListen =   combinedStream.pipe(
+ var streamToListen =   combinedStream.pipe(    
     tap(s=> console.log(JSON.stringify(s)))
     ,mergeMap( ev =>         
-        segmentStream.pipe(            
-            filter(s=>s.endTime > ev.start)
+        segmentStream.pipe(      
+            tap(s=> console.log(JSON.stringify(s)))
+            ,filter(s=>s.endTime > ev.start)
             ,takeWhile(s=> s.startTime < ev.end)
             ,toArray()
-            ,map(a => Object.assign({videos:a, videosStartTime:a[0].startTime, videosEndTime:a[a.length-1].endTime},ev))
-            ,map(event => Object.assign({videosStartTimeSecs:Math.round(parseFloat(event.videosStartTime/1000)),videosEndTimeSecs:Math.round(parseFloat(event.videosEndTime/1000))}))
-            ,map(event => Object.assign({startSecs:Math.round(parseFloat(event.start/1000)),endSecs:Math.round(parseFloat(event.end/1000))}))
+            ,map(event => Object.assign({videos:a, videosStartTime:a[0].startTime, videosEndTime:a[a.length-1].endTime},event))
+            ,map(event => Object.assign({videosStartTimeSecs:Math.round(parseFloat(event.videosStartTime/1000)),videosEndTimeSecs:Math.round(parseFloat(event.videosEndTime/1000))},event))
+            ,map(event => Object.assign({startSecs:Math.round(parseFloat(event.start/1000)),endSecs:Math.round(parseFloat(event.end/1000))},event))
         )
     )
+    ,tap(s=> console.log(JSON.stringify(s)))
 )
 
 
