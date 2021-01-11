@@ -1,5 +1,5 @@
 'use strict';
-const { Observable,of,merge,empty,interval } = require('rxjs');
+const { Observable,of,merge,empty,interval,from } = require('rxjs');
 const { groupBy,mergeMap,throttle,map,share,filter,first,mapTo,timeoutWith,timeout,shareReplay,ignoreElements,debounceTime, toArray,takeWhile,delay,tap,distinct,bufferWhen} = require('rxjs/operators');
 var mqtt = require('../mqttCluster.js');
 
@@ -17,7 +17,7 @@ const sharedSensorStream = movementSensorsReadingStream.pipe(share())
 
 const turnOffStream = sharedSensorStream.pipe(
     debounceTime(10*1000),
-    mapTo({timestamp: (new Date).getTime(), eventType:"off"}),
+    mapTo({eventType:"off"}),    
     share()
     )
 
@@ -25,16 +25,17 @@ turnOffStream.subscribe()
 
 const turnOnStream = sharedSensorStream.pipe(
     throttle(_ => turnOffStream),
-    map(timestamp => ({timestamp, eventType:"on"}))
+    map(timestamp => ({timestamp, eventType:"on"})),
+    tap(s=> console.log(JSON.stringify(s)))
 )
 
 const combinedStream = turnOnStream.pipe(
     mergeMap(on => turnOffStream.pipe(
         first(),
-        map(off => ({start:on.timestamp, end:off.timestamp}))
-    )
+        mapTo({start:on.timestamp, end:(new Date).getTime()}))
     )
 )
+
 
 const { probeVideoInfo} = require('../ffprobeVideoDetailsExtractor');
 const path = require('path');
@@ -83,7 +84,8 @@ segmentStream.subscribe()
             ,filter(s=>s.endTime > ev.start)
             ,takeWhile(s=> s.startTime < ev.end)
             ,toArray()
-            ,map(event => Object.assign({videos:a, videosStartTime:a[0].startTime, videosEndTime:a[a.length-1].endTime},event))
+            ,tap(s=> console.log(JSON.stringify(s)))
+            ,map(a => Object.assign({videos:a, videosStartTime:a[0].startTime, videosEndTime:a[a.length-1].endTime},ev))
             ,map(event => Object.assign({videosStartTimeSecs:Math.round(parseFloat(event.videosStartTime/1000)),videosEndTimeSecs:Math.round(parseFloat(event.videosEndTime/1000))},event))
             ,map(event => Object.assign({startSecs:Math.round(parseFloat(event.start/1000)),endSecs:Math.round(parseFloat(event.end/1000))},event))
         )
