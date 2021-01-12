@@ -16,7 +16,7 @@ const movementSensorsReadingStream = new Observable(async subscriber => {
 const sharedSensorStream = movementSensorsReadingStream.pipe(share())
 
 const turnOffStream = sharedSensorStream.pipe(
-    debounceTime(10*1000),
+    debounceTime(7*1000),
     mapTo({eventType:"off"}),    
     share()
     )
@@ -36,7 +36,7 @@ const combinedStream = turnOnStream.pipe(
         )
     ),
     map(on => ({start:on.timestamp, end:(new Date).getTime()})),
-    map(event => ({start:event.start - 5 * 1000, end:event.end + 5 * 1000}))
+    map(event => ({start:event.start - 7 * 1000, end:event.end}))
    )
 
 
@@ -51,6 +51,7 @@ var spawn = require('child_process').spawn;
 const fs = require('fs');
 const util = require('util');
 const videosFolder = '/videos/'
+const targetFolder = '/movementVideos/'
 const movementTempFolder = `${videosFolder}movements/`
 const ffmpegFolder = '/ffmpeg/';
 
@@ -100,23 +101,27 @@ segmentStream.subscribe()
 
 const extractVideoStream = streamToListen.pipe(
     map(event => Object.assign({eventSubFolderPath:`${movementTempFolder}${event.start}/`}, event)),
+    map(event => Object.assign({eventTargetFolderPath:`${targetFolder}${event.start}/`}, event)),
     map(event => Object.assign({filesToJoinPath:`${event.eventSubFolderPath}${event.start}.txt`}, event)),
     map(event => Object.assign({eventInfoJsonFilePath:`${event.eventSubFolderPath}info.json`}, event)),
     map(event => Object.assign({joinedVideoPath:`${event.eventSubFolderPath}${event.start}_joined.mp4`}, event)),
     map(event => Object.assign({targetVideoPath:`${event.eventSubFolderPath}${event.start}.mp4`}, event)),
     map(event => Object.assign({filesToJoinContent:event.videos.map(v => `file ${v.fileName}`).join('\r\n')}, event)),
     tap(s=> console.log(JSON.stringify(s))),
-    mergeMap(v => createSubFolder(v.eventSubFolderPath).pipe(endWith(v))),
+    mergeMap(v => createSubFolder(v.eventSubFolderPath).pipe(endWith(v))),    
     mergeMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent).pipe(endWith(v))),    
     mergeMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(endWith(v))),
     mergeMap(v => ffmpegextractVideoStream(v.startSecs - v.videosStartTimeSecs, v.endSecs - v.startSecs, v.joinedVideoPath,v.targetVideoPath).pipe(endWith(v))),
     mergeMap(v => removeFile(v.filesToJoinPath).pipe(endWith(v))),
     mergeMap(v => removeFile(v.joinedVideoPath).pipe(endWith(v))),
     mergeMap(v => writeFileStream(v.eventInfoJsonFilePath,JSON.stringify(v)).pipe(endWith(v))),   
+    mergeMap(v => createSubFolder(v.eventTargetFolderPath).pipe(endWith(v))),
+    mergeMap(v => moveDirectory(v.eventSubFolderPath,v.eventTargetFolderPath).pipe(endWith(v))),   
 );
 
 
 const removeFile = path =>  from(util.promisify(fs.unlink)(path)).pipe(switchMapTo(empty()));
+const moveDirectory = (src,dest) =>  from(util.promisify(fs.move)(src,dest)).pipe(switchMapTo(empty()));
 const createSubFolder = path =>  from(util.promisify(fs.mkdir)(path)).pipe(switchMapTo(empty()));
 
 const writeFileStream = (path,content) =>  Observable.create(subscriber => {  
