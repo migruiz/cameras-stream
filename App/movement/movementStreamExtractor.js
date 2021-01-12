@@ -48,7 +48,7 @@ var inotify = new Inotify();
 
 
 var spawn = require('child_process').spawn;
-const fs = require('fs');
+const fs = require('fs-extra')
 const util = require('util');
 const videosFolder = '/videos/'
 const targetFolder = '/movementVideos/'
