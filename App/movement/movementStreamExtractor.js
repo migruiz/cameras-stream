@@ -32,9 +32,12 @@ const turnOnStream = sharedSensorStream.pipe(
 const combinedStream = turnOnStream.pipe(
     mergeMap(on => turnOffStream.pipe(
         first(),
-        mapTo({start:on.timestamp, end:(new Date).getTime()}))
-    )
-)
+        mapTo(on)
+        )
+    ),
+    map(on => ({start:on.timestamp, end:(new Date).getTime()}))
+   )
+
 
 
 const { probeVideoInfo} = require('../ffprobeVideoDetailsExtractor');
@@ -105,7 +108,7 @@ const extractVideoStream = streamToListen.pipe(
     mergeMap(v => createSubFolder(v.eventSubFolderPath).pipe(endWith(v))),
     mergeMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent).pipe(endWith(v))),    
     mergeMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(endWith(v))),
-    mergeMap(v => ffmpegextractVideoStream(v.start - v.videosStartTimeSecs, v.end - v.start, v.joinedVideoPath,v.targetVideoPath).pipe(endWith(v))),
+    mergeMap(v => ffmpegextractVideoStream(v.startSecs - v.videosStartTimeSecs, v.endSecs - v.startSecs, v.joinedVideoPath,v.targetVideoPath).pipe(endWith(v))),
     mergeMap(v => removeFile(v.filesToJoinPath).pipe(endWith(v))),
     mergeMap(v => removeFile(v.joinedVideoPath).pipe(endWith(v))),
     mergeMap(v => writeFileStream(v.eventInfoJsonFilePath,JSON.stringify(v)).pipe(endWith(v))),   
