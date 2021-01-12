@@ -25,8 +25,7 @@ turnOffStream.subscribe()
 
 const turnOnStream = sharedSensorStream.pipe(
     throttle(_ => turnOffStream),
-    map(timestamp => ({timestamp, eventType:"on"})),
-    tap(s=> console.log(JSON.stringify(s)))
+    map(timestamp => ({timestamp, eventType:"on"}))
 )
 
 const combinedStream = turnOnStream.pipe(
@@ -81,21 +80,17 @@ const segmentStream = videoFilesStream.pipe(
 segmentStream.subscribe()
 
 
- var streamToListen =   combinedStream.pipe(    
-    tap(s=> console.log(JSON.stringify(s)))
-    ,mergeMap( ev =>         
+ var streamToListen =   combinedStream.pipe(   
+    mergeMap( ev =>         
         segmentStream.pipe(      
-            tap(s=> console.log(JSON.stringify(s)))
-            ,filter(s=>s.endTime > ev.start)
+            filter(s=>s.endTime > ev.start)
             ,takeWhile(s=> s.startTime < ev.end)
             ,toArray()
-            ,tap(s=> console.log(JSON.stringify(s)))
             ,map(a => Object.assign({videos:a, videosStartTime:a[0].startTime, videosEndTime:a[a.length-1].endTime},ev))
             ,map(event => Object.assign({videosStartTimeSecs:Math.round(parseFloat(event.videosStartTime/1000)),videosEndTimeSecs:Math.round(parseFloat(event.videosEndTime/1000))},event))
             ,map(event => Object.assign({startSecs:Math.round(parseFloat(event.start/1000)),endSecs:Math.round(parseFloat(event.end/1000))},event))
         )
     )
-    ,tap(s=> console.log(JSON.stringify(s)))
 )
 
 
@@ -107,7 +102,6 @@ const extractVideoStream = streamToListen.pipe(
     map(event => Object.assign({joinedVideoPath:`${event.eventSubFolderPath}${event.start}_joined.mp4`}, event)),
     map(event => Object.assign({targetVideoPath:`${event.eventSubFolderPath}${event.start}.mp4`}, event)),
     map(event => Object.assign({filesToJoinContent:event.videos.map(v => `file ${v.fileName}`).join('\r\n')}, event)),
-    tap(s=> console.log(JSON.stringify(s))),
     mergeMap(v => createSubFolder(v.eventSubFolderPath).pipe(endWith(v))),    
     mergeMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent).pipe(endWith(v))),    
     mergeMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(endWith(v))),
@@ -115,7 +109,6 @@ const extractVideoStream = streamToListen.pipe(
     mergeMap(v => removeFile(v.filesToJoinPath).pipe(endWith(v))),
     mergeMap(v => removeFile(v.joinedVideoPath).pipe(endWith(v))),
     mergeMap(v => writeFileStream(v.eventInfoJsonFilePath,JSON.stringify(v)).pipe(endWith(v))),   
-    mergeMap(v => createSubFolder(v.eventTargetFolderPath).pipe(endWith(v))),
     mergeMap(v => moveDirectory(v.eventSubFolderPath,v.eventTargetFolderPath).pipe(endWith(v))),   
 );
 
