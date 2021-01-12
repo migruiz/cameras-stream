@@ -35,7 +35,8 @@ const combinedStream = turnOnStream.pipe(
         mapTo(on)
         )
     ),
-    map(on => ({start:on.timestamp, end:(new Date).getTime()}))
+    map(on => ({start:on.timestamp, end:(new Date).getTime()})),
+    map(event => ({start:event.start - 5 * 1000, end:event.end + 5 * 1000}))
    )
 
 
@@ -74,7 +75,7 @@ const segmentStream = videoFilesStream.pipe(
         }
     )),
     map(videoInfo => Object.assign({endTime:videoInfo.startTime+videoInfo.length}, videoInfo)),
-    shareReplay(1)
+    shareReplay(10)
 )
 segmentStream.subscribe()
 
