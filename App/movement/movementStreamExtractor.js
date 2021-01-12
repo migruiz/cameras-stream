@@ -1,6 +1,6 @@
 'use strict';
 const { Observable,of,merge,empty,interval,from } = require('rxjs');
-const { groupBy,mergeMap,throttle,map,share,filter,first,mapTo,timeoutWith,timeout,shareReplay,ignoreElements,debounceTime, toArray,takeWhile,delay,tap,distinct,bufferWhen} = require('rxjs/operators');
+const { groupBy,mergeMap,throttle,map,share,filter,first,mapTo,timeoutWith,timeout,shareReplay,ignoreElements,debounceTime, toArray,takeWhile,endWith,delay,tap,distinct,bufferWhen,switchMapTo} = require('rxjs/operators');
 var mqtt = require('../mqttCluster.js');
 
 const movementSensorsReadingStream = new Observable(async subscriber => {  
@@ -100,7 +100,8 @@ const extractVideoStream = streamToListen.pipe(
     map(event => Object.assign({eventInfoJsonFilePath:`${event.eventSubFolderPath}info.json`}, event)),
     map(event => Object.assign({joinedVideoPath:`${event.eventSubFolderPath}${event.start}_joined.mp4`}, event)),
     map(event => Object.assign({targetVideoPath:`${event.eventSubFolderPath}${event.start}.mp4`}, event)),
-    map(event => Object.assign({filesToJoinContent:event.videos.map(v => `file ${v}`).join('\r\n')}, event)),
+    map(event => Object.assign({filesToJoinContent:event.videos.map(v => `file ${v.fileName}`).join('\r\n')}, event)),
+    tap(s=> console.log(JSON.stringify(s))),
     mergeMap(v => createSubFolder(v.eventSubFolderPath).pipe(endWith(v))),
     mergeMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent).pipe(endWith(v))),    
     mergeMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(endWith(v))),
