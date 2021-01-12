@@ -121,9 +121,7 @@ const extractVideoStream = streamToListen.pipe(
 
 
 const removeFile = path =>  from(util.promisify(fs.unlink)(path)).pipe(switchMapTo(empty()));
-const moveDirectory = (src,dest) =>  from(util.promisify(fs.move)(src,dest)).pipe(switchMapTo(empty()));
 const createSubFolder = path =>  from(util.promisify(fs.mkdir)(path)).pipe(switchMapTo(empty()));
-
 const writeFileStream = (path,content) =>  Observable.create(subscriber => {  
     fs.writeFile(path, content, function (err) {
         if (err) {
@@ -133,7 +131,14 @@ const writeFileStream = (path,content) =>  Observable.create(subscriber => {
     });
 });
 
-
+const moveDirectory = (src,dest) =>  Observable.create(subscriber => {  
+    fs.move(src, dest, function (err) {
+        if (err) {
+            subscriber.error(err)
+        }
+        subscriber.complete();
+    });
+});
 
 
 
