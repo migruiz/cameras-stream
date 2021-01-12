@@ -4,7 +4,7 @@ RUN [ "cross-build-start" ]
 
 
 #4.1.3
-RUN apk add --update curl xz make python g++ \
+RUN apk add --update curl xz make python3-dev python3 g++ \
 && curl -o ffmpeg-static.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-armhf-static.tar.xz \
 && mkdir ffmpeg \
 && tar xf ffmpeg-static.tar.xz  -C /ffmpeg --strip-components=1 \
