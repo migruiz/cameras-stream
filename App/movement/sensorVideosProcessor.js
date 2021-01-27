@@ -9,9 +9,8 @@ const fs = require('fs');
 const util = require('util');
 const path = require('path');
 const { from,of, Observable,forkJoin,iif,throwError,defer,interval,empty } = require('rxjs');
-const { groupBy,endWith,reduce,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap,switchMapTo} = require('rxjs/operators');
+const { groupBy, endWith,reduce,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap,switchMapTo} = require('rxjs/operators');
 
-const removeFile = path =>  from(util.promisify(fs.unlink)(path)).pipe(switchMapTo(empty()));
 
 const readDirStream = path =>  from(util.promisify(fs.readdir)(path));
 const videosFolder = 'D:\\movements\\videos\\'
@@ -19,10 +18,10 @@ const videosFolderProcessing = 'D:\\movements\\Processing\\'
 const ffmpegFolder = 'D:\\ffmpeg\\';
 
 const resultStream = videoPath =>   readDirStream(videoPath).pipe(
-    tap(v=> console.log('JSON.stringify(v)')),
     concatMap(arr => from(arr)),
     map(dir =>({dir:dir,createdAt: parseInt(path.basename(dir,'.mp4'))})),    
-    map(fi => Object.assign({videoFile:`${videosFolder}${fi.dir}\\${fi.dir}.mp4`}, fi)),    
+    map(fi => Object.assign({videoDirectory:`${videosFolder}${fi.dir}\\`}, fi)),    
+    map(fi => Object.assign({videoFile:`${fi.videoDirectory}${fi.dir}.mp4`}, fi)),    
     concatMap(fi => probeVideoInfo(fi.videoFile).pipe(map(kt => Object.assign({duration:parseFloat(kt.format.duration)}, fi)))),
     map(fi => Object.assign({winVideoFile:`'${fi.videoFile}'`}, fi)),
     map(fi => Object.assign({createdDate:new Date(fi.createdAt)}, fi)),
@@ -52,12 +51,15 @@ const resultStream = videoPath =>   readDirStream(videoPath).pipe(
     concatMap(v => createSubFolder(v.processingSubFolder).pipe(endWith(v))),  
     concatMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent).pipe(endWith(v))),    
     concatMap(v => writeFileStream(v.dayInfoPath,JSON.stringify(v)).pipe(endWith(v))),    
-    //concatMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(endWith(v))),
-
+    concatMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(endWith(v))),
+    concatMap(v => deleteVideosObservable(v.values))
 
     
-    //concatMap(e => removeFile(videosFolder + e.file))
 )
+const deleteVideosObservable = videos => {
+    const listOfObservables = videos.map(v=> removeDirectoryStream(v.videoDirectory))
+    return forkJoin(listOfObservables)
+}
 
 const getYoutubeTime = deltaMiliSecs =>{
     const sec_num = Math.floor(deltaMiliSecs)
@@ -124,7 +126,6 @@ const joinFilesStream = (filesToJoinPath,targetFile) => Observable.create(subscr
       }     
     }); 
 });
-
 
 
 
