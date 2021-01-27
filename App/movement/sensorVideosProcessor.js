@@ -1,6 +1,7 @@
 'use strict';
 const { probeVideoInfo} = require('../ffprobeVideoDetailsExtractor');
 const dateFormat = require('dateformat');
+const CronJob = require('cron').CronJob;
 /**
  * Usage: node upload.js PATH_TO_VIDEO_FILE
  */
@@ -130,15 +131,24 @@ const joinFilesStream = (filesToJoinPath,targetFile) => Observable.create(subscr
 
 
 
+const cronJobStream = (cronExpr) =>  Observable.create(subscriber => {  
+    
+     new CronJob(
+        cronExpr,
+        function() {
+            subscriber.next();
+        },
+        null,
+        true,
+        'Europe/London'
+    );
+});
 
 
 
 
+const cronStream = cronJobStream('2 18 * * *').pipe(concatMap(_ => resultStream(videosFolder) ))
 
+cronStream.subscribe();
 
-//const clearVideoStream = interval(5 * 1000).pipe(mergeMap(_ => resultStream(videosFolder)))
-const clearVideoStream =  resultStream(videosFolder)
-
-clearVideoStream.subscribe();
-
-exports.clearVideoStream = clearVideoStream
+exports.clearVideoStream = cronStream
