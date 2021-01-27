@@ -13,6 +13,7 @@
     "googleapis": "40.0.0",
     "dateformat": "3.0.3",
     "fs-extra": "9.0.1",
-    "cron": "1.8.2"
+    "cron": "1.8.2",
+    "rimraf": "3.0.2"
   }
 }

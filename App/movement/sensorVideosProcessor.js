@@ -1,6 +1,7 @@
 'use strict';
 const { probeVideoInfo} = require('../ffprobeVideoDetailsExtractor');
 const dateFormat = require('dateformat');
+const rimraf = require("rimraf");
 const CronJob = require('cron').CronJob;
 /**
  * Usage: node upload.js PATH_TO_VIDEO_FILE
@@ -84,13 +85,13 @@ const writeFileStream = (path,content) =>  Observable.create(subscriber => {
         subscriber.complete();
     });
 });
-const removeDirectoryStream = path =>  Observable.create(subscriber => {  
-    fs.rmdir(path,{ recursive: true } , function (err) {
+const removeDirectoryStream = path =>  Observable.create(subscriber => { 
+    rimraf(path,  function (err) {
         if (err) {
             subscriber.error(err)
         }
         subscriber.complete();
-    });
+    }); 
 });
 
 const joinFilesStream = (filesToJoinPath,targetFile) => Observable.create(subscriber => {   
