@@ -14,17 +14,17 @@ const { groupBy, endWith,reduce,mergeMap,throttleTime,map,share,filter,first,map
 
 
 const readDirStream = path =>  from(util.promisify(fs.readdir)(path));
-const videosFolder = 'D:\\movements\\videos\\'
-const videosFolderProcessing = 'D:\\movements\\Processing\\'
-const ffmpegFolder = 'D:\\ffmpeg\\';
+const videosFolder = '/movementVideos/videos/'
+const videosFolderProcessing = '/movementVideos/processing/'
+const ffmpegFolder = '/ffmpeg/';
 
 const resultStream = videoPath =>   readDirStream(videoPath).pipe(
     concatMap(arr => from(arr)),
     map(dir =>({dir:dir,createdAt: parseInt(path.basename(dir,'.mp4'))})),    
-    map(fi => Object.assign({videoDirectory:`${videosFolder}${fi.dir}\\`}, fi)),    
+    map(fi => Object.assign({videoDirectory:`${videosFolder}${fi.dir}/`}, fi)),    
     map(fi => Object.assign({videoFile:`${fi.videoDirectory}${fi.dir}.mp4`}, fi)),    
     concatMap(fi => probeVideoInfo(fi.videoFile).pipe(map(kt => Object.assign({duration:parseFloat(kt.format.duration)}, fi)))),
-    map(fi => Object.assign({winVideoFile:`'${fi.videoFile}'`}, fi)),
+    map(fi => Object.assign({videoFile:`${fi.videoFile}`}, fi)),
     map(fi => Object.assign({createdDate:new Date(fi.createdAt)}, fi)),
     map(fi => Object.assign({dateDay:fi.createdDate.getDate()}, fi)),
     groupBy(fi => fi.dateDay, r=>r),
@@ -42,11 +42,11 @@ const resultStream = videoPath =>   readDirStream(videoPath).pipe(
     ),
     
     map(event => Object.assign({startTimeStamp:event.values[0].createdAt}, event)),
-    map(event => Object.assign({processingSubFolder:`${videosFolderProcessing}${event.dateDay}\\`}, event)),
+    map(event => Object.assign({processingSubFolder:`${videosFolderProcessing}${event.dateDay}/`}, event)),
     map(event => Object.assign({filesToJoinPath:`${event.processingSubFolder}filesToJoin.txt`}, event)),
     map(event => Object.assign({joinedVideoPath:`${event.processingSubFolder}joined.mp4`}, event)),
     map(event => Object.assign({dayInfoPath:`${event.processingSubFolder}dayInfo.json`}, event)),
-    map(event => Object.assign({filesToJoinContent:event.values.map(v => `file ${v.winVideoFile}`).join('\r\n')}, event)),
+    map(event => Object.assign({filesToJoinContent:event.values.map(v => `file ${v.videoFile}`).join('\r\n')}, event)),
     
     concatMap(v => removeDirectoryStream(v.processingSubFolder).pipe(endWith(v))),
     concatMap(v => createSubFolder(v.processingSubFolder).pipe(endWith(v))),  
@@ -147,8 +147,9 @@ const cronJobStream = (cronExpr) =>  Observable.create(subscriber => {
 
 
 
-const cronStream = cronJobStream('2 18 * * *').pipe(concatMap(_ => resultStream(videosFolder) ))
+//const cronStream = cronJobStream('30 18 * * *').pipe(concatMap(_ => resultStream(videosFolder) ))
+const cronStream = of(1).pipe(concatMap(_ => resultStream(videosFolder) ))
 
-cronStream.subscribe();
 
-exports.clearVideoStream = cronStream
+
+exports.videoProcessorStream = cronStream

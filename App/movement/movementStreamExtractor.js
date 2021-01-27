@@ -50,7 +50,7 @@ var spawn = require('child_process').spawn;
 const fs = require('fs-extra')
 const util = require('util');
 const videosFolder = '/videos/'
-const targetFolder = '/movementVideos/'
+const targetFolder = '/movementVideos/videos/'
 const movementTempFolder = `${videosFolder}movements/`
 const ffmpegFolder = '/ffmpeg/';
 

@@ -12,6 +12,7 @@ const { emailStream } = require('./emailSender');
 const { uploadVideoStream } = require('./uploadYoutube');
 const { clearVideoStream } = require('./clearVideosStream');
 const { movementStream  } = require('./movement/movementStreamExtractor');
+const { videoProcessorStream  } = require('./movement/sensorVideosProcessor');
 
 
 
@@ -86,3 +87,4 @@ sensorSegmentStream.subscribe();
 movementStream.subscribe(i =>{
     console.log(JSON.stringify(i))
 })
+videoProcessorStream.subscribe()
