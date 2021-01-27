@@ -1,5 +1,6 @@
 'use strict';
 const { probeVideoInfo} = require('../ffprobeVideoDetailsExtractor');
+const dateFormat = require('dateformat');
 /**
  * Usage: node upload.js PATH_TO_VIDEO_FILE
  */
@@ -34,6 +35,8 @@ const resultStream = videoPath =>   readDirStream(videoPath).pipe(
     map(arr => ({ dateDay: parseInt(arr[0], 10), values: arr.slice(1) })),
     map(v => ({ dateDay: v.dateDay, values: v.values.reduce((acc,cur) => [...acc,Object.assign({relativeStartTimeSecs:acc.reduce((a,{duration}) => a+ duration,0)},cur)],[]) })),
     map(v => ({ dateDay: v.dateDay, values: v.values.map(inf => Object.assign({youtubeTime:getYoutubeTime(inf.relativeStartTimeSecs)},inf))})),
+    map(event => Object.assign({youtubeDescription:event.values.map(v => `${v.youtubeTime} ${dateFormat(v.createdDate, "h:MM TT, dddd mmmm dS")}`).join('\r\n')}, event)),
+    map(event => Object.assign({youtubeTitle: `${dateFormat(event.values[0].createdDate, "h:MM TT, dddd mmmm dS")} to ${dateFormat(event.values[event.values.length-1].createdDate, "h:MM TT, dddd mmmm dS")}`},event)),
     tap(v=>         
         console.log(JSON.stringify(v))
     ),
@@ -48,12 +51,11 @@ const resultStream = videoPath =>   readDirStream(videoPath).pipe(
     concatMap(v => removeDirectoryStream(v.processingSubFolder).pipe(endWith(v))),
     concatMap(v => createSubFolder(v.processingSubFolder).pipe(endWith(v))),  
     concatMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent).pipe(endWith(v))),    
+    concatMap(v => writeFileStream(v.dayInfoPath,JSON.stringify(v)).pipe(endWith(v))),    
     //concatMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(endWith(v))),
 
 
-    tap(v=> 
-        console.log(JSON.stringify(v.segmentsInfo))
-    )
+    
     //concatMap(e => removeFile(videosFolder + e.file))
 )
 
@@ -122,6 +124,15 @@ const joinFilesStream = (filesToJoinPath,targetFile) => Observable.create(subscr
       }     
     }); 
 });
+
+
+
+
+
+
+
+
+
 
 
 //const clearVideoStream = interval(5 * 1000).pipe(mergeMap(_ => resultStream(videosFolder)))
