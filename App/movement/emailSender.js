@@ -20,23 +20,20 @@ const sendEmailStream =(auth,base64EncodedEmail) => from(google.gmail('v1').user
 
 
 function getEmailParameters(eventInfo) {
-    const body = JSON.stringify(eventInfo) + '\n' + eventInfo.youtubeURL;
+    const body = eventInfo.youtubeURL + '\n' + eventInfo.youtubeDescription
     const htmlBody = body.split('\n').join('\n<br>\n');
     const emailParams = {
       fromName: 'HOME',
       fromAddress: 'entrancecamera123@gmail.com',
       //to: 'mig.ruiz@gmail.com',
-      to: 'mig.ruiz@gmail.com,soniacarolina.blanco@gmail.com',
-      subject:getSubject(eventInfo),
+      to: 'mig.ruiz@gmail.com',
+      subject:eventInfo.youtubeTitle,
       body: htmlBody
     };
     return emailParams;
   }
 
-  function getSubject(eventInfo){
-    const date = new Date(eventInfo.timestamp);
-    return `Entrance Camera Movement: ${dateFormat(date, "h:MM TT")}`;     
-  }
+  
 
   function getBase64Email(emailParams){
 
