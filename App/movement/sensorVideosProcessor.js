@@ -174,14 +174,13 @@ const resultStream2 = videoPath =>   readDirStream(videoPath).pipe(
             map(it => ({youtubeTitle:it.youtubeTitle, youtubeDescription:it.youtubeDescription,extractedVideoPath:fi.videoFile })),
             map(info => Object.assign(info, fi)),    
         )
-    ),
-    take(1),    
+    ),  
     concatMap(fi=> youtubeStream(fi)
             .pipe(
                 map(it => Object.assign({youtubeURL :it}, fi)),
             )    
     ),
-    concatMap(fi=> emailStream(fi).pipe(endWith(fi))),
+    concatMap(fi=> emailStream(fi).pipe(take(1),mapTo(fi))),
     concatMap(fi => removeDirectoryStream(fi.directory).pipe(endWith(fi))),
     tap(v=>         
         
@@ -239,10 +238,7 @@ const cronStream = cronJobStream('0 9 * * *').pipe(
         concatMap(_ => resultStream2(videosFolderProcessed))
     )
 //const cronStream = of(1).pipe(concatMap(_ => resultStream(videosFolder) ))
-const cronStream2 = of(1).pipe(concatMap(_ => resultStream2(videosFolderProcessed) ))
-
-cronStream2.subscribe();
-return;
+//const cronStream2 = of(1).pipe(concatMap(_ => resultStream2(videosFolderProcessed) ))
 
 
 exports.videoProcessorStream = cronStream
