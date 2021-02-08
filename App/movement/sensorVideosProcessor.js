@@ -158,10 +158,6 @@ const cronJobStream = (cronExpr) =>  Observable.create(subscriber => {
 
 
 const resultStream2 = videoPath =>   readDirStream(videoPath).pipe(
-    tap(v=>         
-        
-        console.log(JSON.stringify(v))
-    ),
     concatMap(arr => from(arr)),
 
     map(dir =>({directory:`${videoPath}${dir}/`})),  
@@ -171,7 +167,7 @@ const resultStream2 = videoPath =>   readDirStream(videoPath).pipe(
         .pipe(
             map(it=>it.toString()),
             map(it=>JSON.parse(it)),
-            map(it => ({youtubeTitle:it.youtubeTitle, youtubeDescription:it.youtubeDescription,extractedVideoPath:fi.videoFile })),
+            map(it => ({youtubeTitle:it.youtubeTitle, youtubeDescription:it.youtubeDescription.substring(0, 499),extractedVideoPath:fi.videoFile })),
             map(info => Object.assign(info, fi)),    
         )
     ),  
@@ -181,11 +177,7 @@ const resultStream2 = videoPath =>   readDirStream(videoPath).pipe(
             )    
     ),
     concatMap(fi=> emailStream(fi).pipe(take(1),mapTo(fi))),
-    concatMap(fi => removeDirectoryStream(fi.directory).pipe(endWith(fi))),
-    tap(v=>         
-        
-        console.log(JSON.stringify(v))
-    ),
+    concatMap(fi => removeDirectoryStream(fi.directory).pipe(endWith(fi)))
 )
 
 
