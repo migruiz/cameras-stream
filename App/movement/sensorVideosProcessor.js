@@ -167,7 +167,7 @@ const resultStream2 = videoPath =>   readDirStream(videoPath).pipe(
         .pipe(
             map(it=>it.toString()),
             map(it=>JSON.parse(it)),
-            map(it => ({youtubeTitle:it.youtubeTitle, youtubeDescription:it.youtubeDescription.substring(0, 499),extractedVideoPath:fi.videoFile })),
+            map(it => ({youtubeTitle:it.youtubeTitle, youtubeDescription:it.youtubeDescription.substring(0, 4999),extractedVideoPath:fi.videoFile })),
             map(info => Object.assign(info, fi)),    
         )
     ),  
