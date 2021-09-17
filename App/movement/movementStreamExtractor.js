@@ -6,7 +6,7 @@ var mqtt = require('../mqttCluster.js');
 const movementSensorsReadingStream = new Observable(async subscriber => {  
     var mqttCluster=await mqtt.getClusterAsync()   
     mqttCluster.subscribeData('EV1527', function(content){
-        if ((content.ID==='001c4e' && content.SWITCH==='03') || content.ID==='0ce052'){
+        if ((content.ID==='001c4e' && content.SWITCH==='03') || content.ID==='0a3789'){
             console.log(content.ID);
             subscriber.next((new Date).getTime())
         }

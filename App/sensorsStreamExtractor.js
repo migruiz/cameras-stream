@@ -8,7 +8,7 @@ const sensorsReadingStream = new Observable(async subscriber => {
     console.log('subscribing sensorsReadingStream')
     const mqttCluster=await mqtt.getClusterAsync()   
     mqttCluster.subscribeData('EV1527', function(content){
-        if (content.ID==='0ce052'){
+        if (content.ID==='0a3789'){
             subscriber.next({data:'16340250'})
         }
     });
