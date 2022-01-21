@@ -5,9 +5,13 @@ var mqtt = require('../mqttCluster.js');
 
 const movementSensorsReadingStream = new Observable(async subscriber => {  
     var mqttCluster=await mqtt.getClusterAsync()   
-    mqttCluster.subscribeData('EV1527', function(content){
-        if ((content.ID==='001c4e' && content.SWITCH==='03') || content.ID==='0a3789'){
-            console.log(content.ID);
+    mqttCluster.subscribeData('zigbee2mqtt/0x00158d000595b372', function(content){        
+        if (content.occupancy){      
+            subscriber.next((new Date).getTime())
+        }
+    });
+    mqttCluster.subscribeData('zigbee2mqtt/0x00158d0007c3846b', function(content){     
+        if (!content.contact)   {
             subscriber.next((new Date).getTime())
         }
     });

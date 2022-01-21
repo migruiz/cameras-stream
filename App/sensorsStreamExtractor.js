@@ -7,13 +7,13 @@ const HALFWINDOW = 20000
 const sensorsReadingStream = new Observable(async subscriber => {  
     console.log('subscribing sensorsReadingStream')
     const mqttCluster=await mqtt.getClusterAsync()   
-    mqttCluster.subscribeData('EV1527', function(content){
-        if (content.ID==='0a3789'){
+    mqttCluster.subscribeData('zigbee2mqtt/0x00158d000595b372', function(content){        
+        if (content.occupancy){      
             subscriber.next({data:'16340250'})
         }
     });
-    mqttCluster.subscribeData('EV1527', function(content){
-        if (content.ID==='001c4e' && content.SWITCH==='03'){
+    mqttCluster.subscribeData('zigbee2mqtt/0x00158d0007c3846b', function(content){     
+        if (!content.contact)   {
             subscriber.next({data:'233945'})
         }
     });
