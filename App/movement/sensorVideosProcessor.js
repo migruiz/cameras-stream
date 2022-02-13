@@ -163,6 +163,7 @@ const triggerUploadStream = new Observable(async subscriber => {
   mqttCluster.subscribeData('entrancecameras/trigger', function(content){        
     subscriber.next();
 });
+});
 
 
 
