@@ -6,7 +6,7 @@ const {google} = require('googleapis');
 const dateFormat = require('dateformat');
 const rimraf = require("rimraf");
 const CronJob = require('cron').CronJob;
-
+var mqtt = require('../mqttCluster.js');
 /**
  * Usage: node upload.js PATH_TO_VIDEO_FILE
  */
