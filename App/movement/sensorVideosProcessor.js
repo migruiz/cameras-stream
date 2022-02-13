@@ -14,8 +14,8 @@ const spawn = require('child_process').spawn;
 const fs = require('fs-extra');
 const util = require('util');
 const path = require('path');
-const { from,of, Observable,forkJoin,iif,throwError,defer,interval,empty } = require('rxjs');
-const { groupBy,take, endWith,reduce,mergeMap,merge,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap,switchMapTo} = require('rxjs/operators');
+const { from,of,merge, Observable,forkJoin,iif,throwError,defer,interval,empty } = require('rxjs');
+const { groupBy,take, endWith,reduce,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap,switchMapTo} = require('rxjs/operators');
 
 
 const readDirStream = path =>  from(util.promisify(fs.readdir)(path));
