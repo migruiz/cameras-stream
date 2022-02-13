@@ -15,7 +15,7 @@ const fs = require('fs-extra');
 const util = require('util');
 const path = require('path');
 const { from,of, Observable,forkJoin,iif,throwError,defer,interval,empty } = require('rxjs');
-const { groupBy,take, endWith,reduce,mergeMap,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap,switchMapTo} = require('rxjs/operators');
+const { groupBy,take, endWith,reduce,mergeMap,merge,throttleTime,map,share,filter,first,mapTo,timeoutWith,toArray,takeWhile,delay,tap,catchError,concatMap,switchMapTo} = require('rxjs/operators');
 
 
 const readDirStream = path =>  from(util.promisify(fs.readdir)(path));
@@ -158,6 +158,15 @@ const cronJobStream = (cronExpr) =>  Observable.create(subscriber => {
 });
 
 
+const triggerUploadStream = new Observable(async subscriber => {  
+  var mqttCluster=await mqtt.getClusterAsync()   
+  mqttCluster.subscribeData('entrancecameras/trigger', function(content){        
+    subscriber.next();
+});
+
+
+
+
 const resultStream2 = videoPath =>   readDirStream(videoPath).pipe(
     concatMap(arr => from(arr)),
 
@@ -226,10 +235,13 @@ const youtubeStream =function(info){
 
 
 
-const cronStream = cronJobStream('0 9 * * *').pipe(
+const cronStream = merge(triggerUploadStream,cronJobStream('0 9 * * *')).pipe(
         concatMap(_ => resultStream(videosFolder)),
         concatMap(_ => resultStream2(videosFolderProcessed))
     )
+
+
+
 //const cronStream = of(1).pipe(concatMap(_ => resultStream(videosFolder) ))
 //const cronStream2 = of(1).pipe(concatMap(_ => resultStream2(videosFolderProcessed) ))
 
