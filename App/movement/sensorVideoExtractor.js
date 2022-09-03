@@ -29,13 +29,16 @@ of(sensorEvent).pipe(
     map(event => Object.assign({filesToJoinPath:`${videosFolderTemp}${event.startedAt}.txt`}, event)),
     map(event => Object.assign({joinedVideoPath:`${videosFolderTemp}${event.startedAt}_joined.mp4`}, event)),
     map(event => Object.assign({targetVideoPath:`${videosFolderTemp}${event.startedAt}.mp4`}, event)),
+    map(event => Object.assign({targetFastVideoPath:`${videosFolderTemp}${event.startedAt}_fast.mp4`}, event)),
     map(event => Object.assign({filesToJoinContent:event.videos.map(v => `file ${v.fileName}`).join('\r\n')}, event)),
     mergeMap(v => writeFileStream(v.filesToJoinPath,v.filesToJoinContent).pipe(endWith(v))),    
     mergeMap(v => joinFilesStream(v.filesToJoinPath,v.joinedVideoPath).pipe(endWith(v))),
     mergeMap(v => ffmpegextractVideoStream(v.joinedStartAt, v.durationSecs, v.joinedVideoPath,v.targetVideoPath).pipe(endWith(v))),   
+    mergeMap(v => ffmpegFastVideoStream(v.targetVideoPath, v.targetFastVideoPath).pipe(endWith(v))),   
     mergeMap(v => removeFile(v.filesToJoinPath).pipe(endWith(v))),
     mergeMap(v => removeFile(v.joinedVideoPath).pipe(endWith(v))),
-    map(event => event.targetVideoPath),
+    mergeMap(v => removeFile(v.targetVideoPath).pipe(endWith(v))),
+    map(event => event.targetFastVideoPath),
 );
 
 
@@ -120,6 +123,37 @@ const ffmpegextractVideoStream = (startPosition,durationSecs,joinedVideoPath,tar
         subscriber.complete();
       }     
     }); 
+});
+
+const ffmpegFastVideoStream = (videoPath,fastVideoPath) => Observable.create(subscriber => {   
+  const params = [
+      '-y'
+      , '-i'
+      , videoPath
+      , '-filter:v'
+      , 'setpts=PTS/5'
+      , fastVideoPath
+  ];
+  const ffmpegChild = spawn(ffmpegFolder+'ffmpeg',params);
+  var result = '';
+  ffmpegChild.stdout.on('data', (data) => {
+      result += data.toString();
+  });
+  var errorResult = '';
+  ffmpegChild.stderr.on('data', (data) => {
+    errorResult += data.toString();
+  });
+  ffmpegChild.on('exit', function (code, signal) {
+    if (code) {
+      console.log(JSON.stringify({startPosition,joinedVideoPath,targetVideoPath,code,signal,result,errorResult}))
+      subscriber.error('ffmpegextractVideoStream error');
+    } else if (signal) {
+      console.log(JSON.stringify({startPosition,joinedVideoPath,targetVideoPath,code,signal,result,errorResult}))
+      subscriber.error('ffmpegextractVideoStream error');
+    } else {
+      subscriber.complete();
+    }     
+  }); 
 });
 
 
