@@ -12,6 +12,11 @@ const sensorsReadingStream = new Observable(async subscriber => {
             subscriber.next({data:'16340250'})
         }
     });
+    mqttCluster.subscribeData('zigbee2mqtt/0xa4c1383eda8e611e', function(content){        
+        if (content.occupancy){      
+            subscriber.next({data:'16340250'})
+        }
+    });
     mqttCluster.subscribeData('zigbee2mqtt/0x00158d0007c3846b', function(content){     
         if (!content.contact)   {
             subscriber.next({data:'233945'})

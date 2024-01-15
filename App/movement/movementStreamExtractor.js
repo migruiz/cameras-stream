@@ -10,6 +10,11 @@ const movementSensorsReadingStream = new Observable(async subscriber => {
             subscriber.next((new Date).getTime())
         }
     });
+    mqttCluster.subscribeData('zigbee2mqtt/0xa4c1383eda8e611e', function(content){        
+        if (content.occupancy){      
+            subscriber.next((new Date).getTime())
+        }
+    });
     mqttCluster.subscribeData('zigbee2mqtt/0x00158d0007c3846b', function(content){     
         if (!content.contact)   {
             subscriber.next((new Date).getTime())
